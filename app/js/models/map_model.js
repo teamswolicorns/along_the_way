@@ -2,7 +2,7 @@ var Backbone = require('backbone');
 var $ = require('jquery');
 Backbone.$ = $;
 
-var Map = Backbone.Model.extend({
+var Gmap = Backbone.Model.extend({
   defaults: {
     origin:{lat:47.60,lng:-122.33},
     destination:{lat:45.20,lng:-122.68},
@@ -18,7 +18,7 @@ var Map = Backbone.Model.extend({
 
   initialize: function(position) {
     this.set('position',position);
-    var currentLatLng = new.google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+   // var currentLatLng = new.google.maps.LatLng(position.coords.latitude, position.coords.longitude);
     this.set('currentLatLng',currentLatLng);
     var mapOptions = {
       zoom: this.get('zoom'),

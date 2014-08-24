@@ -1,4 +1,3 @@
-'use strict';
 var Backbone = require('backbone');
 var $ = require('jquery');
 Backbone.$ = $;
@@ -10,7 +9,7 @@ var MapView = Backbone.View.extend({
   },
 
   render: function() {
-    var template = require('../templates/basic-map-tempate.hbs');
+    var template = require('../templates/basic-map-template.hbs');
     var data = this.model.attributes;
     this.$el.html(template(data));
     return this;

@@ -1,21 +1,22 @@
 module.exports = function(grunt) {
-  //install these like npm install --save-dev grunt-contrib-clean
-  grunt.loadNpmTasks('grunt-contrib-clean'); //erases everything in a dir (dist in our case)
-  grunt.loadNpmTasks('grunt-contrib-copy'); //copies static files
-  grunt.loadNpmTasks('grunt-browserify'); //builds js files
+  grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-browserify');
+  grunt.loadNpmTasks('grunt-express-server');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
 
   grunt.initConfig({
     clean: {
       dev: {
-        src: ['dist/']
+        src: ['build/']
       }
     },
     copy: {
       dev: {
         expand: true,
-        cwd: 'app/',  //current working directory
+        cwd: 'app/',
         src: ['*.html', '*.css'],
-        dest: 'dist/',
+        dest: 'build/',
         filter: 'isFile'
       }
     },
@@ -26,11 +27,24 @@ module.exports = function(grunt) {
           debug: true
         },
         src: ['app/js/**/*.js'],
-        dest: 'dist/bundle.js'
+        dest: 'build/bundle.js'
       }
     },
+    express: {
+      options: {
+        port: 3000,
+        background: false
+      },
+      dev: {
+        options: {
+          script: './server.js'
+        }
+      }
+    },
+    jshint: {
+      all: ['Gruntfile.js', 'server.js','app/client.js' ,'routes/**/*.js', 'app/js/**/*.js']
+    },
   });
-  grunt.registerTask('build:dev', ['clean:dev', 'browserify:dev', 'copy:dev']);
-//cleans the dist folder, browserifys it, copies the html and css files into dist
-//todo: add testing task
+  grunt.registerTask('build', ['clean:dev', 'browserify:dev', 'copy:dev']);
+  grunt.registerTask('default', ['jshint', 'build', 'express:dev']);
 };
