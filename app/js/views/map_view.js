@@ -21,7 +21,7 @@ var MapView = Backbone.View.extend({
     //var template = require('../templates/template-map.hbs'); // getting the basic map template from template folder
     //var data = this.model.attributes;
     //this.$el.html(template(data));
-    return this;
+    return this; // returns everything in the map-conatiner div (google map api, new map with map options model)
   }
 });
 

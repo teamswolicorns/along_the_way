@@ -32,3 +32,5 @@ var Map = Backbone.Model.extend({
   } // have to use getters and setters with backbone
 
 });
+
+module.exports = Map;
