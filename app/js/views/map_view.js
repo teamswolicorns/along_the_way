@@ -1,17 +1,18 @@
+'use strict';
 var Backbone = require('backbone');
 var $ = require('jquery');
 Backbone.$ = $;
 
 var MapView = Backbone.View.extend({
   id: 'map-container',
-  url: "http://maps.googleapis.com/maps/api/js?key=AIzaSyAQjiLO3VzaBOgcMT2TafgLCPmiu5QySFs&sensor=false";
+  url: "http://maps.googleapis.com/maps/api/js?key=AIzaSyAQjiLO3VzaBOgcMT2TafgLCPmiu5QySFs&sensor=false",
   initialize: function() {
     $.ajax({ //this part loads in the api info
       url: this.url,
       dataType: 'script',
       async: false,
     }).done(function() { //once api info is in, makes a new map object with map options from the map model and attaching this map to the div el
-      this.model.set('map', new goole.maps.Map(this.el, this.model.get('mapOptions')));
+      this.model.set('map', new google.maps.Map(this.el, this.model.get('mapOptions')));
     });
     this.render();
   },
