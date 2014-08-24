@@ -11,7 +11,7 @@ var Map = Backbone.Model.extend({
     position:{},
     zoom: 13,
     maxZoom:16,
-    minZoom:10
+    minZoom:10 // these are all variables that google map api expects you to have
   },
 
   //puts the map in the screen
@@ -29,6 +29,6 @@ var Map = Backbone.Model.extend({
       mapTypeControl: false
     };
     this.set('mapOptions',mapOptions);
-  }
+  } // have to use getters and setters with backbone
 
 });
