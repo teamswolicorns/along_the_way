@@ -1,7 +1,7 @@
 {
   "name": "along_the_way",
   "version": "1.0.0",
-  "description": "along_the_way =============",
+  "description": "along_the_way",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
