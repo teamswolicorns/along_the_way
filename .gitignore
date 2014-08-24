@@ -2,3 +2,4 @@ node_modules/
 **/*.sw?
 app/bower_components/
 build/
+.DS_Store
