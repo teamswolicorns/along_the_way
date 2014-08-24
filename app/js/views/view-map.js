@@ -3,8 +3,11 @@ var $ = require('jquery');
 Backbone.$ = $;
 
 var MapView = Backbone.View.extend({
-  id: 'map-container',
-  url: "http://maps.googleapis.com/maps/api/js?key=AIzaSyAQjiLO3VzaBOgcMT2TafgLCPmiu5QySFs&sensor=false";
+  defaults: {
+    id: 'map-container',
+    url: 'http://maps.googleapis.com/maps/api/js?key=AIzaSyAQjiLO3VzaBOgcMT2TafgLCPmiu5QySFs&sensor=false'
+  },
+
   initialize: function() {
     $.ajax({ //this part loads in the api info
       url: this.url,
