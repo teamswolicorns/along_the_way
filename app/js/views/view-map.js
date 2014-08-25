@@ -5,22 +5,14 @@ Backbone.$ = $;
 
 var MapView = Backbone.View.extend({
   id: 'content',
-  events: {
-    "submit": "testfunction"
-  },
 
   initialize: function() {
     var map = new google.maps.Map(
       this.el,
       this.model.get('mapOptions')
     );
-    console.log('initialized');
+    console.log('initialized from view-map.js');
     this.render();
-  },
-
-  testfunction: function(e) {
-    e.preventDefault();
-    console.log('test function!');
   },
 
   render: function() {

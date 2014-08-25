@@ -3,17 +3,18 @@ var Backbone = require('backbone');
 var $ = require('jquery');
 Backbone.$ = $;
 
-//incorporates two views:
+//master view pulls in the search view and the map view
+var MasterView = Backbone.View.extend({
+  initialize:function() {
+    this.render();
+  },
+  render: function() {
+    this.$el.html(template);
+  },
+});
 
-//searchdiv view
-// search template-search
 
-//mapdiv view
-// mapview template-map
-
-//render this into itself and append view.el in client.js (in the global scope)
-//not putting this into the view
+//render this into itself and append view.$el in client.js (in the global scope)
+//the problem: we're not putting this into the view
 //this.$el.html
 
-//map is one view
-//search is another view
