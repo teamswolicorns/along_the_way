@@ -4,6 +4,7 @@ var $ = require('jquery');
 Backbone.$ = $;
 
 var NavView = Backbone.View.extend({
+
   tagName: 'div',
   initialize: function() {
     this.render();

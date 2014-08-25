@@ -6,8 +6,9 @@ Backbone.$ = $;
 var MapModel = require('./models/model-map');
 var MapView = require('./views/view-map');
 
+var mapModel = new MapModel({});
+var mapView = new MapView({model: mapModel}); //makes a new map view and brings in the new map model (created above) to this new map view
 
-var map = new MapModel({});
-var mapView = new MapView({model: map}); //makes a new map view and brings in the new map model (created above) to this new map view
-$('#map').html(mapView.$el);
+
+$('#content').html(mapView.el); //removed $el to see if it helps link these views into the index.html
 

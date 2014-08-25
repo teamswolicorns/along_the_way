@@ -11,15 +11,17 @@ var Gmap = Backbone.Model.extend({
     position:{},
     zoom: 13,
     maxZoom:16,
-    minZoom:10 // these are all variables that google map api expects you to have
+    minZoom:10, // these are all variables that google map api expects you to have
+    url: 'http://maps.googleapis.com/maps/api/js?key=AIzaSyAQjiLO3VzaBOgcMT2TafgLCPmiu5QySFs&sensor=false'
   },
 
   //puts the map in the screen
 
   initialize: function(position) {
     this.set('position',position);
-   // var currentLatLng = new.google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+    var currentLatLng = new google.maps.LatLng(this.get('origin'), this.get('destination'));
     this.set('currentLatLng',currentLatLng);
+
     var mapOptions = {
       zoom: this.get('zoom'),
       minZoom: this.get('minZoom'),
