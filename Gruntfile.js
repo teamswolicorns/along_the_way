@@ -2,6 +2,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-browserify');
+  grunt.loadNpmTasks('grunt-mocha'); //mjg - added mocha
   grunt.loadNpmTasks('grunt-express-server');
   grunt.loadNpmTasks('grunt-contrib-jshint');
 
@@ -23,11 +24,20 @@ module.exports = function(grunt) {
     browserify: {
       dev: {
         options: {
-          transform: ['debowerify'],
+          transform: ['debowerify', 'hbsfy'], //mjg - added hbsfy
           debug: true
         },
         src: ['app/js/**/*.js'],
         dest: 'build/bundle.js'
+      },
+      //mjg - added so that tests get browserified and can be viewed in chrome
+      test: {
+        options: {
+          transform: ['hbsfy', 'debowerify'],
+          debug: true
+        },
+        src: ['test/mocha/backbone/**/*.js'],
+        dest: 'test/testbundle.js'
       }
     },
     express: {
@@ -38,6 +48,14 @@ module.exports = function(grunt) {
       dev: {
         options: {
           script: './server.js'
+        }
+      }
+    },
+    mocha: { //mjg - added mocha
+      backbonetest: {
+        src: ['test/test.html'],
+        options: {
+          run: true
         }
       }
     },

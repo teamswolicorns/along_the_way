@@ -33,4 +33,4 @@ var Gmap = Backbone.Model.extend({
 
 });
 
-module.exports = Map;
+module.exports = Gmap;
