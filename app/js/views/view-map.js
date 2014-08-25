@@ -4,20 +4,24 @@ var $ = require('jquery');
 Backbone.$ = $;
 
 var MapView = Backbone.View.extend({
+  id: 'content',
   defaults: {},
 
   initialize: function() {
+    var map = new google.maps.Map(
+      this.el,
+      this.model.get('mapOptions')
+    );
     //what should happen when a view is initialized?
     this.render();
   },
 
+
   render: function() {
     //what should happen when the view is rendered/updated?
     console.log("called render");
-    $('#map-container').replaceWith(this.el);
-    var template = require('../templates/template-map.hbs'); // getting the basic map template from template folder
-    var data = this.model.attributes;
-    this.$el.html(template(data));
+    $('body').append(this.el);
+
     return this; // returns everything in the map-conatiner div (google map api, new map with map options model)
   }
 });
