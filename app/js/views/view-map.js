@@ -6,28 +6,15 @@ Backbone.$ = $;
 var MapView = Backbone.View.extend({
   defaults: {},
 
-  id: 'map-container',
-
   initialize: function() {
-    //mjg - I set it as a var in effort to match this example
-    //http://stackoverflow.com/questions/18335113/how-can-i-load-google-maps-api-from-backbone-js-model
-    var url = "http://maps.googleapis.com/maps/api/js?key=AIzaSyAQjiLO3VzaBOgcMT2TafgLCPmiu5QySFs&sensor=false";
-    $.ajax({ //this part loads in the api info
-      url: url,
-      dataType: 'script',
-      async: false,
-      success: function() {
-        console.log("script loaded - remove this message");
-      }
-    }).done(function() { //once api info is in, makes a new map object with map options from the map model and attaching this map to the div el
-      this.model.set('map', new google.maps.Map(this.el, this.model.get('mapOptions')));
-    });
+    //what should happen when a view is initialized?
     this.render();
   },
 
   render: function() {
+    //what should happen when the view is rendered/updated?
     console.log("called render");
-    $('#' + this.id).replaceWith(this.el);
+    $('#map-container').replaceWith(this.el);
     var template = require('../templates/template-map.hbs'); // getting the basic map template from template folder
     var data = this.model.attributes;
     this.$el.html(template(data));

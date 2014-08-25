@@ -9,6 +9,7 @@ var MapView = require('./views/view-map');
 var mapModel = new MapModel({});
 var mapView = new MapView({model: mapModel}); //makes a new map view and brings in the new map model (created above) to this new map view
 
-
-$('#content').html(mapView.el); //removed $el to see if it helps link these views into the index.html
-
+$(function() {
+  loadScript();
+  console.log("ready called from index.html");
+});
