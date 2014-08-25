@@ -1,3 +1,4 @@
+'use strict';
 module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
@@ -5,6 +6,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-mocha'); //mjg - added mocha
   grunt.loadNpmTasks('grunt-express-server');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-watch');
 
   grunt.initConfig({
     clean: {
@@ -42,12 +44,11 @@ module.exports = function(grunt) {
     },
     express: {
       options: {
-        port: 3000,
-        background: false
+        port: 3000
       },
       dev: {
         options: {
-          script: './server.js'
+          script: 'server.js'
         }
       }
     },
@@ -76,12 +77,17 @@ module.exports = function(grunt) {
           'beforeEach' : false,
           'after'      : false,
           'afterEach'  : false,
-          'equal'      : false
+          'equal'      : false,
+          'google'     : false
         },
       },
-      all: ['Gruntfile.js', 'server.js','app/client.js' ,'routes/**/*.js', 'app/js/**/*.js']
+      all: ['Gruntfile.js', 'server.js', 'routes/**/*.js', 'app/js/**/*.js']
     },
+    watch: {
+      files: ['server.js', 'routes/**/*.js', 'app/**/*'],
+      tasks: ['build']
+    }
   });
   grunt.registerTask('build', ['clean:dev', 'browserify:dev', 'copy:dev']);
-  grunt.registerTask('default', ['jshint', 'build', 'express:dev']);
+  grunt.registerTask('default', ['jshint', 'build', 'express:dev', 'watch']);
 };
