@@ -5,7 +5,9 @@ Backbone.$ = $;
 
 var MapView = Backbone.View.extend({
   id: 'content',
-  defaults: {},
+  events: {
+    "submit": "testfunction"
+  },
 
   initialize: function() {
     var map = new google.maps.Map(
@@ -13,15 +15,24 @@ var MapView = Backbone.View.extend({
       this.model.get('mapOptions')
     );
     console.log('initialized');
-    //what should happen when a view is initialized?
     this.render();
   },
 
+  testfunction: function(e) {
+    e.preventDefault();
+    console.log('test function!');
+  },
 
   render: function() {
-    //what should happen when the view is rendered/updated?
     console.log("called render");
-    $('body').append(this.el);
+    //not good to append this.el to the body in the view
+    //do this somewhere else, like in client.js
+
+    var template = require('../templates/template-map.hbs');
+    var data = this.model.attributes;
+    this.$el.html(template(data)); //will replace with whatever's in the template-map.hbs
+
+
 
     return this; // returns everything in the map-conatiner div (google map api, new map with map options model)
   }
