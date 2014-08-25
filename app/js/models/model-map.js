@@ -4,17 +4,12 @@ Backbone.$ = $;
 
 var map = Backbone.Model.extend({
   defaults: {
-    origin:{lat:47.60,lng:-122.33},
-    destination:{lat:45.20,lng:-122.68},
-    zoom: 13,
-    center:'',
-    mapOptions:{}
+    mapOptions: {
+      zoom: 8,
+      center: new google.maps.LatLng(47.601, -122.333) //needs a 3 digit decimal
+      //might need a type?
+    }
   },
-
-  initMap: function() {
-
-
-  }
 
 });
 

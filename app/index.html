@@ -9,32 +9,12 @@
   <title>Swolicorn App</title>
   <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&key=AIzaSyAQjiLO3VzaBOgcMT2TafgLCPmiu5QySFs"></script>
   <script src="bundle.js"></script>
-  <!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>-->
 </head>
 <body>
   <h1>Along the Way</h1>
   <p>An app by: Arielle Wilson, John Fahey, Livingston Martin, Mandi Grant</p>
   <div id="content" style="height:100%"></div>
-
   <script>
-  function initialize() {
-    var mapOptions = {
-      zoom: 8,
-      center: new google.maps.LatLng(-34.397, 150.644)
-    };
-
-    var map = new google.maps.Map(document.getElementById('content'),
-        mapOptions);
-  }
-
-  function loadScript() {
-    var script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = 'https://maps.googleapis.com/maps/api/js?v=3.exp&' +
-        'callback=initialize';
-    document.body.appendChild(script);
-  }
-
 </script>
 </body>
 </html>
