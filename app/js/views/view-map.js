@@ -12,6 +12,7 @@ var MapView = Backbone.View.extend({
       this.el,
       this.model.get('mapOptions')
     );
+    console.log('initialized');
     //what should happen when a view is initialized?
     this.render();
   },

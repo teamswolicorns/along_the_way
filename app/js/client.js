@@ -6,9 +6,9 @@ Backbone.$ = $;
 var MapModel = require('./models/model-map');
 var MapView = require('./views/view-map');
 
-var mapModel = new MapModel({});
-var mapView = new MapView({model: mapModel}); //makes a new map view and brings in the new map model (created above) to this new map view
 
 $(function() {
-  mapView.initialize();
+   //makes a new map view and brings in the new map model (created above) to this new map view
+  var mapModel = new MapModel({});
+  var mapView = new MapView({model: mapModel});
 });
