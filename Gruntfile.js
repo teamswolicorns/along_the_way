@@ -60,6 +60,25 @@ module.exports = function(grunt) {
       }
     },
     jshint: {
+      options: {
+        curly: true,
+        eqeqeq: true,
+        eqnull: true,
+        browser: true,
+        node: true,
+        globals: {
+          'describe'   : false,
+          'it'         : false,
+          'to'         : false,
+          'ok'         : false,
+          'be'         : false,
+          'before'     : false,
+          'beforeEach' : false,
+          'after'      : false,
+          'afterEach'  : false,
+          'equal'      : false
+        },
+      },
       all: ['Gruntfile.js', 'server.js','app/client.js' ,'routes/**/*.js', 'app/js/**/*.js']
     },
   });
