@@ -7,35 +7,28 @@ module.exports = Backbone.Model.extend({
   defaults: {
     mapOptions: {
       mapTypeId: google.maps.MapTypeId.ROADMAP,
-      zoom: 8,
-      center: google.maps.LatLng(37.768,-122.510)
+      zoom: 15,
+      center: google.maps.LatLng(51.507,0.127) //using london as default
     }
   },
 
   initialize: function(){
-    this.setStartLoc();
-    console.log("mapOptions center when we call initialize: expect 51,0 " + this.get('mapOptions.center'));
-  },
-
-  setStartLoc: function() {
+    var self = this; //if 'this' isn't behaving as expected, do this
     if(navigator.geolocation) {
-      //navigator.geolocation.getCurrentPosition(this.setLocation.bind(this));
-      navigator.geolocation.getCurrentPosition(function(position) {
-        //var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-        this.set('mapOptions.center', new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+        navigator.geolocation.getCurrentPosition(function(position) {
+          self.set('mapOptions.center', new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+          //Need to fake a location? The test .set below fakes location as a beach in Chicago
+          //self.set('mapOptions.center', new google.maps.LatLng(41.759952, -87.545198));
       });
     } else {
       console.log("navigator.geolocation not supported");
     }
   },
 
-  setLocation: function(position) {
-    //this.set('mapOptions.center', new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
-    console.log("mapOptions center after calling setLocation: expect seattle " + this.get('mapOptions.center'));
-  },
-
+  //work in progress for polyline
   calcRoute: function() {
     console.log("calculating route called in model-map.js");
+    //this is commented out because it's work in progress for building the route
     /*
     var currentDestination = this.get('destination');
     console.log("currentDestination is: " + currentDestination);
@@ -50,7 +43,8 @@ module.exports = Backbone.Model.extend({
       if (status === google.maps.DirectionsStatus.OK) {
         directionsDisplay.setDirections(response);
       }
-    }); */
+    });
+  */
   }
 
 });
