@@ -6,21 +6,16 @@ Backbone.$ = $;
 
 module.exports = Backbone.View.extend({
   type: "Map View", //tutorial I read says this is good for debugging, not sure yet how it's used
-  id: 'content', //not sure if this id is necessary
+  id: 'content',
 
   initialize: function() {
-    var map = new google.maps.Map(
-      this.el,
-      this.model.get('mapOptions')
-    );
-    console.log('initialized from view-map.js... did the map load?');
-    this.render();
+    this.model.on("change mapOptions.center", this.render, this); //attach a listener
   },
 
   render: function() {
     console.log("called view-map.js render function... did a map load?");
-    var template = require('../templates/template-map.hbs');
-    var data = this.model.attributes;
+    var map = new google.maps.Map(this.el,this.model.get('mapOptions'));
+    map.setCenter(this.model.get('mapOptions.center'));
     return this; // returns everything in the map-conatiner div (google map api, new map with map options model)
   }
 });
