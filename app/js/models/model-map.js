@@ -5,48 +5,37 @@ Backbone.$ = $;
 
 module.exports = Backbone.Model.extend({
   defaults: {
-    startLat: 0,
-    startLong: 0,
-    zoom: 8,
     mapOptions: {
-      locationArray: [],
-      startLat: 0,
-      startLong: 0,
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
       zoom: 8,
-      center: new google.maps.LatLng(51.5072, 0.1275)
+      center: google.maps.LatLng(37.768,-122.510)
     }
   },
 
   initialize: function(){
-    var self = this;
-    console.log("model initialized");
     this.setStartLoc();
-    console.log('initializing model-map.js - this is here to ensure it is not called multiple times');
-    // this.set('mapOptions.center', new google.maps.LatLng(self.get('startLat'), self.get('startLong')));
+    console.log("mapOptions center when we call initialize: expect 51,0 " + this.get('mapOptions.center'));
   },
+
   setStartLoc: function() {
-    if(!!navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(this.setLocation.bind(this));
+    if(navigator.geolocation) {
+      //navigator.geolocation.getCurrentPosition(this.setLocation.bind(this));
+      navigator.geolocation.getCurrentPosition(function(position) {
+        //var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+        this.set('mapOptions.center', new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+      });
     } else {
       console.log("navigator.geolocation not supported");
     }
   },
+
   setLocation: function(position) {
-    var latitude = position.coords.latitude;
-    var longitude = position.coords.longitude;
-    console.log(position.coords.latitude);
-    console.log(position.coords.longitude);
-    console.log(this.get('startLat'));
-    console.log(this.get('startLong'));
-    this.set('mapOptions.center', new google.maps.LatLng(latitude, longitude));
-    console.log("This is the mmapOptions center" + this.get('mapOptions.center'));
+    //this.set('mapOptions.center', new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+    console.log("mapOptions center after calling setLocation: expect seattle " + this.get('mapOptions.center'));
   },
 
   calcRoute: function() {
-  //if you need to pass something from the view to the model, you can do so in this function
-  //we don't need to in this case, just a note for later
     console.log("calculating route called in model-map.js");
-
     /*
     var currentDestination = this.get('destination');
     console.log("currentDestination is: " + currentDestination);
