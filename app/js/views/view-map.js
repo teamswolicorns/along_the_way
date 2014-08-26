@@ -44,6 +44,10 @@ module.exports = Backbone.View.extend({
           // If the place has a geometry, then present it on a map.
       if (place.geometry.viewport) {
         map.fitBounds(place.geometry.viewport);
+        console.log('Longitude is ' + place.geometry.location.B); //John
+        console.log('Latitude is ' + place.geometry.location.k); //John
+
+
       }
       else {
         map.setCenter(place.geometry.location);
