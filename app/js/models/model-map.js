@@ -12,7 +12,7 @@ module.exports = Backbone.Model.extend({
       startLat: 0,
       startLong: 0,
       zoom: 8,
-      center: new google.maps.LatLng(45.6234173, -122.3359854)
+      center: new google.maps.LatLng(51.5072, 0.1275)
 
        //needs a 3 digit decimal
       //might need a type?
@@ -20,10 +20,9 @@ module.exports = Backbone.Model.extend({
   },
   initialize: function(){
     var self = this;
-    console.log(this);
+    console.log("model initialized");
     this.setStartLoc();
     // this.set('mapOptions.center', new google.maps.LatLng(self.get('startLat'), self.get('startLong')));
-    this.set('mapOptions.center', new google.maps.LatLng(47.6234173, -122.3359854));
   },
   setStartLoc: function() {
     if(!!navigator.geolocation) {
@@ -33,12 +32,14 @@ module.exports = Backbone.Model.extend({
     }
   },
    setLocation: function(position) {
-      // console.log(position.coords.latitude);
-      // console.log(position.coords.longitude);
-      this.set("startLat", position.coords.latitude);
-      this.set("startLong", position.coords.longitude);
-      console.log(this.get('startLat'));
-      console.log(this.get('startLong'));
+    var latitude = position.coords.latitude;
+    var longitude = position.coords.longitude;
+    console.log(position.coords.latitude);
+    console.log(position.coords.longitude);
+    console.log(this.get('startLat'));
+    console.log(this.get('startLong'));
+    this.set('mapOptions.center', new google.maps.LatLng(latitude, longitude));
+    console.log("This is the mmapOptions center" + this.get('mapOptions.center'));
     }
 });
 

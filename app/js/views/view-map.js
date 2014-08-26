@@ -8,11 +8,11 @@ var MapView = Backbone.View.extend({
   defaults: {},
 
   initialize: function() {
+    console.log('view initialized');
     var map = new google.maps.Map(
       this.el,
       this.model.get('mapOptions')
     );
-    console.log('initialized');
     //what should happen when a view is initialized?
     this.render();
   },
