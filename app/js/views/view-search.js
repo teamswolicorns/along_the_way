@@ -1,3 +1,4 @@
+//view-search is a child of view-master
 'use strict';
 var Backbone = require('backbone');
 var $ = require('jquery');
@@ -5,9 +6,9 @@ Backbone.$ = $;
 
 module.exports = Backbone.View.extend({
   type: "Search View", //for debugging
-  tagName: "div",
+  tagName: "div", //still not sure what tagName is for
   events: {
-    "submit": "calcroute"
+    "submit": "submitfunction"
   },
 
   initialize:function() {
@@ -22,8 +23,10 @@ module.exports = Backbone.View.extend({
     return this;
   },
 
-  calcroute: function(e) {
+  submitfunction: function(e) {
     e.preventDefault();
+    this.model.calcRoute();
+    //here in view-search we can access a method on the map model because master passed it in
     console.log("stub: calculating route code goes here");
   }
 });
