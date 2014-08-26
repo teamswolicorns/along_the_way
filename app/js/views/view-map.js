@@ -19,7 +19,6 @@ module.exports = Backbone.View.extend({
 
   render: function() {
     console.log("called view-map.js render function... did a map load?");
-    var template = require('../templates/template-map.hbs');
     var data = this.model.attributes;
     return this; // returns everything in the map-conatiner div (google map api, new map with map options model)
   }
