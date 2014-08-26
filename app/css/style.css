@@ -1,0 +1,31 @@
+html {
+  background-color:#D4F1FF;
+  color:black;
+  text-align:center;
+  font-family:sans-serif;
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  margin:0;
+  padding:0;
+}
+
+input {
+  width:200px;
+  height:30px;
+  font-size:16px;
+}
+
+#childSearchDiv {
+  padding-bottom:30px;
+}
+
+#childMapDiv {
+  height:300px;
+  width: 50%;
+  margin: 0 auto;
+  padding: 0;
+}
+
