@@ -1,13 +1,15 @@
+//view-map is a child of view-master
 'use strict';
 var Backbone = require('backbone');
 var $ = require('jquery');
 Backbone.$ = $;
 
-var MapView = Backbone.View.extend({
-  id: 'content',
-  defaults: {},
+module.exports = Backbone.View.extend({
+  type: "Map View", //tutorial I read says this is good for debugging, not sure yet how it's used
+  id: 'content', //not sure if this id is necessary
 
   initialize: function() {
+<<<<<<< HEAD
     console.log('view initialized');
     var map = new google.maps.Map(
       this.el,
@@ -16,15 +18,24 @@ var MapView = Backbone.View.extend({
     //what should happen when a view is initialized?
     this.render();
   },
+=======
+    //this.listenTo(this.model, 'change', this.render);
+>>>>>>> dbf816a5100548a6de4489c021781aa79beaa665
 
+    this.on("change:center",function(){
+      var map = new google.maps.Map(
+        this.el,
+        this.model.get('mapOptions')
+      );
+      console.log('initialized from view-map.js... did the map load?');
+      this.render();
+      });
+    },
 
   render: function() {
-    //what should happen when the view is rendered/updated?
-    console.log("called render");
-    $('body').append(this.el);
-
+    console.log("called view-map.js render function... did a map load?");
+    var data = this.model.attributes;
     return this; // returns everything in the map-conatiner div (google map api, new map with map options model)
   }
 });
 
-module.exports = MapView;
