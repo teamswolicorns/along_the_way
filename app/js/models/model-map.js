@@ -28,7 +28,7 @@ module.exports = Backbone.Model.extend({
     if(!!navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(this.setLocation.bind(this));
     } else {
-      alert("navigator.geolocation not supported");
+      console.log("navigator.geolocation not supported");
     }
   },
   setLocation: function(position) {
@@ -47,6 +47,7 @@ module.exports = Backbone.Model.extend({
   //we don't need to in this case, just a note for later
     console.log("calculating route called in model-map.js");
 
+    /*
     var currentDestination = this.get('destination');
     console.log("currentDestination is: " + currentDestination);
     var start = this.get('start');
@@ -57,10 +58,10 @@ module.exports = Backbone.Model.extend({
       travelMode: google.maps.TravelMode.DRIVING
     };
     directionsService.route(request, function(response, status) {
-      if (status == google.maps.DirectionsStatus.OK) {
+      if (status === google.maps.DirectionsStatus.OK) {
         directionsDisplay.setDirections(response);
       }
-    });
+    }); */
   }
 
 });

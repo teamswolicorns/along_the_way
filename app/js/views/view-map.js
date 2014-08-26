@@ -9,19 +9,6 @@ module.exports = Backbone.View.extend({
   id: 'content', //not sure if this id is necessary
 
   initialize: function() {
-<<<<<<< HEAD
-    console.log('view initialized');
-    var map = new google.maps.Map(
-      this.el,
-      this.model.get('mapOptions')
-    );
-    //what should happen when a view is initialized?
-    this.render();
-  },
-=======
-    //this.listenTo(this.model, 'change', this.render);
->>>>>>> dbf816a5100548a6de4489c021781aa79beaa665
-
     this.on("change:center",function(){
       var map = new google.maps.Map(
         this.el,

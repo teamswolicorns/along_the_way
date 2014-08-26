@@ -4,8 +4,8 @@ var $ = require('jquery');
 Backbone.$ = $;
 
 //instantiate the map model here in view-master.js so we can pass it to children views
-var Map = require('../models/model-map');
-var map = new Map({});
+var MapModel = require('../models/model-map');
+var map = new MapModel({});
 
 //require the children views so we can instantiate them here in view-master.js
 var ChildSearchView = require('./view-search');
