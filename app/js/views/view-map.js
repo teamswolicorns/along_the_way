@@ -3,7 +3,7 @@ var Backbone = require('backbone');
 var $ = require('jquery');
 Backbone.$ = $;
 
-var MapView = Backbone.View.extend({
+module.exports = Backbone.View.extend({
   id: 'content',
 
   initialize: function() {
@@ -11,23 +11,16 @@ var MapView = Backbone.View.extend({
       this.el,
       this.model.get('mapOptions')
     );
-    console.log('initialized from view-map.js');
+    console.log('initialized from view-map.js...did the map load?');
     this.render();
   },
 
   render: function() {
-    console.log("called render");
-    //not good to append this.el to the body in the view
-    //do this somewhere else, like in client.js
-
+    console.log("called view-map.js render function...did a map load?");
     var template = require('../templates/template-map.hbs');
     var data = this.model.attributes;
-    this.$el.html(template(data)); //will replace with whatever's in the template-map.hbs
-
-
-
+    //this.$el.html(template(data)); //will replace with whatever's in the template-map.hbs
     return this; // returns everything in the map-conatiner div (google map api, new map with map options model)
   }
 });
 
-module.exports = MapView;
