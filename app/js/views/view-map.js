@@ -9,13 +9,17 @@ module.exports = Backbone.View.extend({
   id: 'content', //not sure if this id is necessary
 
   initialize: function() {
-    var map = new google.maps.Map(
-      this.el,
-      this.model.get('mapOptions')
-    );
-    console.log('initialized from view-map.js... did the map load?');
-    this.render();
-  },
+    //this.listenTo(this.model, 'change', this.render);
+
+    this.on("change:center",function(){
+      var map = new google.maps.Map(
+        this.el,
+        this.model.get('mapOptions')
+      );
+      console.log('initialized from view-map.js... did the map load?');
+      this.render();
+      });
+    },
 
   render: function() {
     console.log("called view-map.js render function... did a map load?");
