@@ -26,6 +26,14 @@ module.exports = Backbone.View.extend({
     var autocomplete = new google.maps.places.Autocomplete(input);
       autocomplete.bindTo('bounds', map);
 //////////////////Start input
+    var infowindow = new google.maps.InfoWindow();
+    var marker = new google.maps.Marker({
+      map: map,
+      anchorPoint: new google.maps.Point(0, -29)
+    });
+
+
+
     google.maps.event.addListener(autocomplete, 'place_changed', function() {
         infowindow.close();
         marker.setVisible(false);
