@@ -1,0 +1,15 @@
+html {
+  background-color:#D4F1FF;
+  color:black;
+  text-align:center;
+  font-family:sans-serif;
+  height: 100%;
+}
+
+body {
+  height: 100%; margin:0; padding:0;
+}
+
+.dimensionalDiv {
+  height: 100%; margin:0; padding:0;
+}

@@ -15,7 +15,7 @@ var Map = Backbone.Model.extend({
   },
 
   initialize: function() {
-    console.log('something called model-map.js initialize!');
+    console.log('initializing model-map.js - this is here to ensure it is not called multiple times');
   },
 
   calcRoute: function(e) {
