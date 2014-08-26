@@ -6,7 +6,6 @@ Backbone.$ = $;
 
 module.exports = Backbone.View.extend({
   type: "Search View", //for debugging
-  tagName: "div", //still not sure what tagName is for
   events: {
     "submit": "submitfunction"
   },

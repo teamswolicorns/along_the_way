@@ -3,26 +3,40 @@ var Backbone = require('backbone');
 var $ = require('jquery');
 Backbone.$ = $;
 
-var Map = Backbone.Model.extend({
+module.exports = Backbone.Model.extend({
   defaults: {
     mapOptions: {
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
       zoom: 8,
-      center: new google.maps.LatLng(47.601, -122.333), //lat and lng always need a 3 digit decimal
-      //might need a type?
-      start:'47.601, -122.333', //probably formatted wrong
-      destination: '50.601, -150.333',
+      center: google.maps.LatLng(37.768,-122.510)
     }
   },
 
-  initialize: function() {
-    console.log('initializing model-map.js - this is here to ensure it is not called multiple times');
+  initialize: function(){
+    this.setStartLoc();
+    console.log("mapOptions center when we call initialize: expect 51,0 " + this.get('mapOptions.center'));
+  },
+
+  setStartLoc: function() {
+    if(navigator.geolocation) {
+      //navigator.geolocation.getCurrentPosition(this.setLocation.bind(this));
+      navigator.geolocation.getCurrentPosition(function(position) {
+        //var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+        this.set('mapOptions.center', new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+      });
+    } else {
+      console.log("navigator.geolocation not supported");
+    }
+  },
+
+  setLocation: function(position) {
+    //this.set('mapOptions.center', new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+    console.log("mapOptions center after calling setLocation: expect seattle " + this.get('mapOptions.center'));
   },
 
   calcRoute: function() {
-  //if you need to pass something from the view to the model, you can do so in this function
-  //we don't need to in this case, just a note for later
     console.log("calculating route called in model-map.js");
-
+    /*
     var currentDestination = this.get('destination');
     console.log("currentDestination is: " + currentDestination);
     var start = this.get('start');
@@ -33,12 +47,10 @@ var Map = Backbone.Model.extend({
       travelMode: google.maps.TravelMode.DRIVING
     };
     directionsService.route(request, function(response, status) {
-      if (status == google.maps.DirectionsStatus.OK) {
+      if (status === google.maps.DirectionsStatus.OK) {
         directionsDisplay.setDirections(response);
       }
-    });
+    }); */
   }
 
 });
-
-module.exports = Map;
