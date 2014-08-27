@@ -46,7 +46,7 @@ module.exports = Backbone.View.extend({
 
   placeCallback: function(results, status) {
     /* create a marker for everything found in the results */
-    if (status == google.maps.places.PlacesServiceStatus.OK) {
+    if (status === google.maps.places.PlacesServiceStatus.OK) {
       for (var i = 0; i < results.length; i++) {
         this.createMarker(results[i]);
       }
