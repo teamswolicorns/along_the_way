@@ -9,30 +9,29 @@ module.exports = Backbone.View.extend({
   // id: 'content',
 
   initialize: function() {
-    this.model.on("change mapOptions.center", this.render, this); //attach a listener
-  },
-
-  render: function() {
+    // this.model.on("change mapOptions.center", this.render, this); //attach a listener
     var template = require('../templates/template-map.hbs');
     var data = this.model.attributes;
     this.$el.html(template(data));
-    console.log("called view-map.js render function... did a map load?");
-    var map = new google.maps.Map(this.$('#map').get(0),this.model.get('mapOptions'));
-      map.setCenter(this.model.get('mapOptions.center'));
 
+    var map = new google.maps.Map(this.$('#map').get(0),this.model.get('mapOptions'));
+
+    map.setCenter(this.model.get('mapOptions.center'));
+    this.autoComplete(map);
+  },
+
+  autoComplete: function(map) {
     var input = this.$('#pac-input').get(0);
     //   map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
     var autocomplete = new google.maps.places.Autocomplete(input);
       autocomplete.bindTo('bounds', map);
-//////////////////Start input
+
     var infowindow = new google.maps.InfoWindow();
     var marker = new google.maps.Marker({
       map: map,
       anchorPoint: new google.maps.Point(0, -29)
     });
-
-
 
     google.maps.event.addListener(autocomplete, 'place_changed', function() {
         infowindow.close();
@@ -74,8 +73,10 @@ module.exports = Backbone.View.extend({
 
       infowindow.setContent('<div><strong>' + place.name + '</strong><br>' + address);
       infowindow.open(map, marker);
-      /////////////////End of input
    });
+  },
+
+  render: function() {
     return this; // returns everything in the map-conatiner div (google map api, new map with map options model)
   }
 });
