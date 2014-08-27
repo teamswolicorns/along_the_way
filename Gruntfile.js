@@ -78,7 +78,8 @@ module.exports = function(grunt) {
           'after'      : false,
           'afterEach'  : false,
           'equal'      : false,
-          'google'     : false
+          'google'     : false,
+          'RouteBoxer' : false
         },
       },
       all: ['Gruntfile.js', 'server.js', 'routes/**/*.js', 'app/js/**/*.js']
