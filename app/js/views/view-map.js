@@ -15,8 +15,6 @@ module.exports = Backbone.View.extend({
   // id: 'content',
 
   initialize: function() {
-    this.model.on("change", this.modelChanged, this);
-
     var template = require('../templates/template-map.hbs');
     var data = this.model.attributes;
     this.$el.html(template(data));
@@ -73,7 +71,6 @@ module.exports = Backbone.View.extend({
   autoComplete: function() {
     var self = this;
     var input = this.$('#destinationLocInput').get(0);
-    //   map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
     var autocomplete = new google.maps.places.Autocomplete(input);
       autocomplete.bindTo('bounds', map);
