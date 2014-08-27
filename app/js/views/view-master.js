@@ -22,6 +22,9 @@ module.exports = Backbone.View.extend({
   },
 
   initialize: function() {
+    var template = require('../templates/template-master.hbs'); //pull in the master template html
+    this.$el.html(template); //add this view (view-master) to the div specified at the top
+    this.addChildViews(); //add the child views to the DOM
     this.render();
   },
 
@@ -34,9 +37,6 @@ module.exports = Backbone.View.extend({
   },
 
   render: function() {
-    var template = require('../templates/template-master.hbs'); //pull in the master template html
-    this.$el.html(template); //add this view (view-master) to the div specified at the top
-    this.addChildViews(); //add the child views to the DOM
     return this;
   },
 
