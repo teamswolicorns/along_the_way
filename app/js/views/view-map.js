@@ -9,6 +9,8 @@ var directionsService;
 var directionsDisplay;
 var map;
 
+var rboxer = new RouteBoxer();
+
 module.exports = Backbone.View.extend({
   type: "Map View", //tutorial I read says this is good for debugging, not sure yet how it's used
   id: 'content',
@@ -56,9 +58,38 @@ module.exports = Backbone.View.extend({
 
     directionsService.route(request, function(response, status) {
       if (status === google.maps.DirectionsStatus.OK) {
-        console.log("status was okay, displaying directions now...");
         directionsDisplay.setDirections(response);
+
+        var route = response.routes[0];
+        var distance = 6; //km
+
+        var path = response.routes[0].overview_path;
+        var boxes = rboxer.box(path, distance);
+        drawBoxes(boxes); //comment to turn off boxes
+
+        for (var i = 0; i < boxes.length; i ++ ) {
+          var bounds = boxes[i];
+          console.log("making a box");
+        }
       }
+
+      //draw the array of boxes as polylines on the map
+      var boxpolys = null;
+      function drawBoxes(boxes) {
+        console.log("boxes is " + boxes);
+        boxpolys = new Array(boxes.length);
+        for (var i = 0; i < boxes.length; i++) {
+          boxpolys[i] = new google.maps.Rectangle({
+            bounds: boxes[i],
+            fillOpacity:0,
+            strokeOpacity: 1.0,
+            strokeColor: '#000000',
+            strokeWeight:1,
+            map:map
+          });
+        }
+      }
+
     });
     this.render();
   },
