@@ -15,6 +15,8 @@ module.exports = Backbone.View.extend({
   // id: 'content',
 
   initialize: function() {
+    this.model.on("change", this.modelChanged, this);
+
     var template = require('../templates/template-map.hbs');
     var data = this.model.attributes;
     this.$el.html(template(data));
@@ -69,7 +71,8 @@ module.exports = Backbone.View.extend({
   },
 
   autoComplete: function() {
-    var input = this.$('#pac-input').get(0);
+    var self = this;
+    var input = this.$('#destinationLocInput').get(0);
     //   map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
     var autocomplete = new google.maps.places.Autocomplete(input);
@@ -91,10 +94,14 @@ module.exports = Backbone.View.extend({
           // If the place has a geometry, then present it on a map.
       if (place.geometry.viewport) {
         map.fitBounds(place.geometry.viewport);
+
+        // set end point for route - john
+
+        self.model.set('end', new google.maps.LatLng(place.geometry.location.k, place.geometry.location.B));
+
+        self.model.get('end');
         console.log('Longitude is ' + place.geometry.location.B); //John
         console.log('Latitude is ' + place.geometry.location.k); //John
-
-
       }
       else {
         map.setCenter(place.geometry.location);

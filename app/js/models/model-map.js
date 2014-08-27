@@ -12,7 +12,7 @@ module.exports = Backbone.Model.extend({
       zoom: 15,
       center: new google.maps.LatLng(51.459684, -3.160270) //using cardiff as default because nerd
     },
-    end: new google.maps.LatLng(45.511872, -122.681534)//using portland as a hardcoded end
+    end: {new google.maps.LatLng(45.511872, -122.681534)}//using portland as a hardcoded end
   },
 
   initialize: function() {
