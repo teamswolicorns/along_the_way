@@ -43,7 +43,8 @@ module.exports = Backbone.View.extend({
     var placesRequest = {
       location: this.model.get('mapOptions.center'),
       radius:500,
-      types:['store']
+      //types:['gym','spa','bicycle_store']
+      types: this.model.get('placeTypes')
     };
 
     placeInfoWindow = new google.maps.InfoWindow();
