@@ -26,8 +26,12 @@ module.exports = Backbone.View.extend({
     create a new map with mapOptions
     */
     this.model.on("change mapOptions.center", this.centerMap, this);
-    map = new google.maps.Map(this.$('#map').get(0),this.model.get('mapOptions'));
+    this.mapInit();
     this.autoComplete();
+  },
+
+  mapInit: function() {
+    map = new google.maps.Map(this.$('#map').get(0),this.model.get('mapOptions'));
   },
 
   centerMap: function() {
@@ -114,6 +118,13 @@ module.exports = Backbone.View.extend({
   getDirections: function() {
     var self = this;
     /* makes a line between point A and point B */
+    this.mapInit();
+
+    /*
+    getDirections is lifted almost verbatim from the maps API
+    except it pulls data from our model where appropriate
+    */
+    // console.log("called getDirections in view-map.js");
     directionsService = new google.maps.DirectionsService();
     directionsDisplay = new google.maps.DirectionsRenderer();
     directionsDisplay.setMap(map);
