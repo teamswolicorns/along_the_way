@@ -10,17 +10,24 @@ var map = new MapModel({});
 var ChildSearchView = require('./view-search');
 var ChildMapView = require('./view-map');
 
+var childSearchView;
+var childMapView;
+
 module.exports = Backbone.View.extend({
   type: 'MasterView', //for debugging, according to some guide I read
   tagName: 'div',
+
+  events: {
+    "submit": "drawRouteButtonClicked"
+  },
 
   initialize: function() {
     this.render();
   },
 
   addChildViews: function() {
-    var childSearchView = new ChildSearchView({model: map});
-    var childMapView    = new ChildMapView({model: map});
+    childSearchView = new ChildSearchView({model: map});
+    childMapView    = new ChildMapView({model: map});
 
     this.$el.children('#childSearchDiv').append(childSearchView.$el);
     this.$el.children('#childMapDiv').append(childMapView.$el);
@@ -31,5 +38,11 @@ module.exports = Backbone.View.extend({
     this.$el.html(template); //add this view (view-master) to the div specified at the top
     this.addChildViews(); //add the child views to the DOM
     return this;
+  },
+
+  drawRouteButtonClicked: function(e) {
+    e.preventDefault();
+    childMapView.getDirections();
   }
+
 });
