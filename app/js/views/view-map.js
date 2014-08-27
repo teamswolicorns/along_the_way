@@ -26,7 +26,7 @@ module.exports = Backbone.View.extend({
     */
     this.model.on("change mapOptions.center", this.centerMap, this);
     map = new google.maps.Map(this.$('#map').get(0),this.model.get('mapOptions'));
-    this.autoComplete(map);
+    this.autoComplete();
   },
 
   centerMap: function() {
@@ -48,7 +48,7 @@ module.exports = Backbone.View.extend({
     getDirections is lifted almost verbatim from the maps API
     except it pulls data from our model where appropriate
     */
-    console.log("called getDirections in view-map.js");
+    // console.log("called getDirections in view-map.js");
 
     directionsService = new google.maps.DirectionsService();
     directionsDisplay = new google.maps.DirectionsRenderer();
@@ -96,12 +96,7 @@ module.exports = Backbone.View.extend({
         map.fitBounds(place.geometry.viewport);
 
         // set end point for route - john
-
         self.model.set('end', new google.maps.LatLng(place.geometry.location.k, place.geometry.location.B));
-
-        self.model.get('end');
-        console.log('Longitude is ' + place.geometry.location.B); //John
-        console.log('Latitude is ' + place.geometry.location.k); //John
       }
       else {
         map.setCenter(place.geometry.location);
