@@ -30,19 +30,17 @@ body {
   padding:10px;
 }
 
-#childSearchDiv {
-  padding-bottom:30px;
-}
-
 #childMapDiv {
   height:300px;
   width: 50%;
   margin: 0 auto;
   padding: 0;
 }
+
 #map {
   width: 600px;
-  height: 600px;
+  height: 350px;
+  margin:20px auto;
 }
 
 #showRouteButton {

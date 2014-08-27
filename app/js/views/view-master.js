@@ -6,11 +6,7 @@ Backbone.$ = $;
 var MapModel = require('../models/model-map');
 var map = new MapModel({});
 
-//require the children views so we can instantiate them here in view-master.js
-var ChildSearchView = require('./view-search');
 var ChildMapView = require('./view-map');
-
-var childSearchView;
 var childMapView;
 
 module.exports = Backbone.View.extend({
@@ -29,10 +25,7 @@ module.exports = Backbone.View.extend({
   },
 
   addChildViews: function() {
-    childSearchView = new ChildSearchView({model: map});
-    childMapView    = new ChildMapView({model: map});
-
-    this.$el.children('#childSearchDiv').append(childSearchView.$el);
+    childMapView  = new ChildMapView({model: map});
     this.$el.children('#childMapDiv').append(childMapView.$el);
   },
 

@@ -11,7 +11,6 @@ var NavView = Backbone.View.extend({
   },
 
   render: function() {
-    var template = require('../templates/template-nav.hbs');
     var data = this.model.attributes;
     this.$el.html(template(data));
     return this;
