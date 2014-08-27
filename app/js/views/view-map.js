@@ -8,8 +8,8 @@ Backbone.$ = $;
 var directionsService;
 var directionsDisplay;
 var map;
-
 var rboxer = new RouteBoxer();
+var placeInfoWindow;
 
 module.exports = Backbone.View.extend({
   type: "Map View", //tutorial I read says this is good for debugging, not sure yet how it's used
@@ -38,6 +38,40 @@ module.exports = Backbone.View.extend({
     this.render();
   },
 
+  findPlaces: function() {
+    console.log("called findPlaces in view-map.js");
+    var placesRequest = {
+      location: this.model.get('mapOptions.center'),
+      radius:500,
+      types:['store']
+    };
+
+    placeInfoWindow = new google.maps.InfoWindow();
+    var placeService = new google.maps.places.PlacesService(map);
+    placeService.nearbySearch(placesRequest, placeCallback);
+
+    function placeCallback(results, status) {
+      if (status == google.maps.places.PlacesServiceStatus.OK) {
+        for (var i = 0; i < results.length; i++) {
+          createMarker(results[i]);
+        }
+      }
+    }
+
+    function createMarker(place) {
+      var placeLoc = place.geometry.location;
+      var marker = new google.maps.Marker({
+        map: map,
+        position: place.geometry.location
+      });
+
+      google.maps.event.addListener(marker, 'click', function() {
+        placeInfoWindow.setContent(place.name);
+        placeInfoWindow.open(map, this);
+      });
+    }
+  },
+
   getDirections: function() {
     /*
     getDirections is lifted almost verbatim from the maps API
@@ -50,13 +84,13 @@ module.exports = Backbone.View.extend({
 
     directionsDisplay.setMap(map);
 
-    var request = {
+    var routeRequest = {
       origin: this.model.get('mapOptions.center'),
       destination: this.model.get('end'),
       travelMode: google.maps.TravelMode.DRIVING
     };
 
-    directionsService.route(request, function(response, status) {
+    directionsService.route(routeRequest, function(response, status) {
       if (status === google.maps.DirectionsStatus.OK) {
         directionsDisplay.setDirections(response);
 
@@ -76,7 +110,6 @@ module.exports = Backbone.View.extend({
       //draw the array of boxes as polylines on the map
       var boxpolys = null;
       function drawBoxes(boxes) {
-        console.log("boxes is " + boxes);
         boxpolys = new Array(boxes.length);
         for (var i = 0; i < boxes.length; i++) {
           boxpolys[i] = new google.maps.Rectangle({
@@ -91,6 +124,7 @@ module.exports = Backbone.View.extend({
       }
 
     });
+    this.findPlaces();
     this.render();
   },
 
