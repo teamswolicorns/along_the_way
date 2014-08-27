@@ -9,7 +9,7 @@ module.exports = Backbone.Model.extend({
   defaults: {
     mapOptions: {
       mapTypeId: google.maps.MapTypeId.ROADMAP,
-      zoom: 5,
+      zoom: 15,
       center: new google.maps.LatLng(51.459684, -3.160270) //using cardiff as default because nerd
     },
     //placeTypes:['gym','spa','bicycle_store'],
