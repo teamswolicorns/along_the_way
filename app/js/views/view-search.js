@@ -6,9 +6,6 @@ Backbone.$ = $;
 
 module.exports = Backbone.View.extend({
   type: "Search View", //for debugging
-  events: {
-    "submit": "submitfunction"
-  },
 
   initialize:function() {
     this.model.on("change", this.modelChanged, this); //whenever the associated model changes, update the view
@@ -22,8 +19,5 @@ module.exports = Backbone.View.extend({
     return this;
   },
 
-  submitfunction: function(e) {
-    e.preventDefault();
-    this.model.calcRoute();
-  }
+
 });
