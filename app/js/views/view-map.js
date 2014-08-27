@@ -25,8 +25,12 @@ module.exports = Backbone.View.extend({
     create a new map with mapOptions
     */
     this.model.on("change mapOptions.center", this.centerMap, this);
-    map = new google.maps.Map(this.$('#map').get(0),this.model.get('mapOptions'));
+    this.mapInit();
     this.autoComplete();
+  },
+
+  mapInit: function() {
+    map = new google.maps.Map(this.$('#map').get(0),this.model.get('mapOptions'));
   },
 
   centerMap: function() {
@@ -79,12 +83,13 @@ module.exports = Backbone.View.extend({
   },
 
   getDirections: function() {
+    this.mapInit();
+
     /*
     getDirections is lifted almost verbatim from the maps API
     except it pulls data from our model where appropriate
     */
     // console.log("called getDirections in view-map.js");
-
     directionsService = new google.maps.DirectionsService();
     directionsDisplay = new google.maps.DirectionsRenderer();
 
@@ -99,6 +104,7 @@ module.exports = Backbone.View.extend({
     directionsService.route(routeRequest, function(response, status) {
       if (status === google.maps.DirectionsStatus.OK) {
         directionsDisplay.setDirections(response);
+
 
         var route = response.routes[0];
         var distance = 6; //km
