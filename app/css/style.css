@@ -12,10 +12,22 @@ body {
   padding:0;
 }
 
-input {
+#destinationLocInput {
   width:200px;
   height:30px;
   font-size:16px;
+}
+
+#filterCheckboxes {
+  list-style-type:none;
+}
+
+#filterCheckboxes li {
+  display:inline;
+}
+
+.chkbox {
+  padding:10px;
 }
 
 #childSearchDiv {
@@ -33,3 +45,16 @@ input {
   height: 600px;
 }
 
+#showRouteButton {
+  height:50px;
+  width:130px;
+  background-color:#F2FBFF;
+  color:black;
+  border-radius:20px;
+  font-size:1.1em;
+  border:0;
+}
+
+#showRouteButton:hover {
+  background-color:yellow;
+}
