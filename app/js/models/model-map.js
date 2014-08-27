@@ -21,7 +21,7 @@ module.exports = Backbone.Model.extend({
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(position) {
         self.set('mapOptions.center', new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
-        //Need to fake a location? The test .set below fakes location as a beach in Chicago
+        //Need to fake a start location? The test .set below fakes location as a beach in Chicago
         //self.set('mapOptions.center', new google.maps.LatLng(41.759952, -87.545198));
       });
     } else {
