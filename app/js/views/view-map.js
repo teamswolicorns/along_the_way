@@ -36,6 +36,11 @@ module.exports = Backbone.View.extend({
   },
 
   render: function() {
+    var infowindow = new google.maps.InfoWindow({
+        map: map,
+        position: this.model.get('mapOptions.center'),
+        content: 'You are here.'
+    });
     map.setCenter(this.model.get('mapOptions.center'));
     return this;
   },
