@@ -11,6 +11,7 @@ var directionsDisplay;
 var map;
 var rboxer = new RouteBoxer();
 var placeInfoWindow;
+var placeService;
 
 module.exports = Backbone.View.extend({
   type: "Map View", //tutorial I read says this is good for debugging, not sure yet how it's used
@@ -43,53 +44,81 @@ module.exports = Backbone.View.extend({
     this.render();
   },
 
-  findPlaces: function() {
-    console.log("called findPlaces in view-map.js");
+  placeCallback: function(results, status) {
+    /* create a marker for everything found in the results */
+    if (status === google.maps.places.PlacesServiceStatus.OK) {
+      for (var i = 0; i < results.length; i++) {
+        this.createMarker(results[i]);
+      }
+    }
+  },
+
+  findPlacesInBoxBounds: function(box) {
+
+    //find the midpoint of the box region that was passed in
+    var northeast = box.getNorthEast();
+    var southwest = box.getSouthWest();
+
+    var lat1 = northeast.lat();
+    var lat2 = southwest.lat();
+
+    var long1 = northeast.lng();
+    var long2 = southwest.lng();
+
+    var lat = (lat1 + lat2) / 2;
+    var lng = (long1 + long2) / 2;
+
     var placesRequest = {
-      location: this.model.get('mapOptions.center'),
-      radius:500,
-      //types:['gym','spa','bicycle_store']
-      types: this.model.get('placeTypes')
+      location: new google.maps.LatLng(lat, lng),
+      //location: new google.maps.LatLngBounds(box),
+      //radius:500,
+      types: this.model.get('placeTypes'),
+      rankBy: google.maps.places.RankBy.DISTANCE
     };
 
     placeInfoWindow = new google.maps.InfoWindow();
-    var placeService = new google.maps.places.PlacesService(map);
-    placeService.nearbySearch(placesRequest, placeCallback);
+    placeService = new google.maps.places.PlacesService(map);
+    placeService.nearbySearch(placesRequest, this.placeCallback.bind(this));
+  },
 
-    function placeCallback(results, status) {
-      if (status === google.maps.places.PlacesServiceStatus.OK) {
-        for (var i = 0; i < results.length; i++) {
-          createMarker(results[i]);
-        }
-      }
-    }
+  createMarker: function(place) {
+    /* just a map marker factory */
+    var placeLoc = place.geometry.location;
+    var marker = new google.maps.Marker({
+      map: map,
+      position: place.geometry.location
+    });
 
-    function createMarker(place) {
-      var placeLoc = place.geometry.location;
-      var marker = new google.maps.Marker({
-        map: map,
-        position: place.geometry.location
-      });
+    google.maps.event.addListener(marker, 'click', function() {
+      placeInfoWindow.setContent(place.name);
+      placeInfoWindow.open(map, this);
+    });
+  },
 
-      google.maps.event.addListener(marker, 'click', function() {
-        placeInfoWindow.setContent(place.name);
-        placeInfoWindow.open(map, this);
+  drawBoxRegions: function(boxes) {
+    //draw the array of boxes as polylines on the map
+    var boxpolys = null;
+    boxpolys = new Array(boxes.length);
+    for (var i = 0; i < boxes.length; i++) {
+      boxpolys[i] = new google.maps.Rectangle({
+        bounds: boxes[i],
+        fillOpacity:0,
+        strokeOpacity: 1.0,
+        strokeColor: '#000000',
+        strokeWeight:1,
+        map:map
       });
     }
   },
 
   getDirections: function() {
-    /*
-    getDirections is lifted almost verbatim from the maps API
-    except it pulls data from our model where appropriate
-    */
-    // console.log("called getDirections in view-map.js");
-
+    var self = this;
+    /* makes a line between point A and point B */
     directionsService = new google.maps.DirectionsService();
     directionsDisplay = new google.maps.DirectionsRenderer();
-
     directionsDisplay.setMap(map);
 
+    /* route request options */
     var routeRequest = {
       origin: this.model.get('mapOptions.center'),
       destination: this.model.get('end'),
@@ -99,40 +128,27 @@ module.exports = Backbone.View.extend({
     directionsService.route(routeRequest, function(response, status) {
       if (status === google.maps.DirectionsStatus.OK) {
         directionsDisplay.setDirections(response);
-
-        var route = response.routes[0];
-        var distance = 6; //km
-
-        var path = response.routes[0].overview_path;
-        var boxes = rboxer.box(path, distance);
-        drawBoxes(boxes); //comment to turn off boxes
-
-        for (var i = 0; i < boxes.length; i ++ ) {
-          var bounds = boxes[i];
-          console.log("making a box");
-        }
+        self.createBoxRegion(response); //cannot access createBoxRegion from in here
       }
-
-      //draw the array of boxes as polylines on the map
-      var boxpolys = null;
-      function drawBoxes(boxes) {
-        boxpolys = new Array(boxes.length);
-        for (var i = 0; i < boxes.length; i++) {
-          boxpolys[i] = new google.maps.Rectangle({
-            bounds: boxes[i],
-            fillOpacity:0,
-            strokeOpacity: 1.0,
-            strokeColor: '#000000',
-            strokeWeight:1,
-            map:map
-          });
-        }
-      }
-
     });
-    this.findPlaces();
     this.render();
   },
+
+  createBoxRegion: function(response) {
+    var route = response.routes[0];
+    var distance = 0.6; //km
+
+    var path = response.routes[0].overview_path;
+    var boxes = rboxer.box(path, distance);
+    this.drawBoxRegions(boxes); //comment to turn off boxes
+
+    for (var i = 0; i < boxes.length; i ++ ) {
+      var bounds = boxes[i];
+      //find places inside it
+      this.findPlacesInBoxBounds(boxes[i]);
+    }
+  },
+
 
   autoComplete: function() {
     var self = this;
@@ -193,3 +209,4 @@ module.exports = Backbone.View.extend({
     return this; // returns everything in the map-conatiner div (google map api, new map with map options model)
   }
 });
+
