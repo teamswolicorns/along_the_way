@@ -57,7 +57,7 @@ module.exports = Backbone.View.extend({
     placeService.nearbySearch(placesRequest, placeCallback);
 
     function placeCallback(results, status) {
-      if (status == google.maps.places.PlacesServiceStatus.OK) {
+      if (status === google.maps.places.PlacesServiceStatus.OK) {
         for (var i = 0; i < results.length; i++) {
           createMarker(results[i]);
         }
