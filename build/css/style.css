@@ -1,0 +1,103 @@
+html {
+  background-color:#333;
+  color:black;
+  text-align:center;
+  font-family:sans-serif;
+  height: 100%;
+  color:#A8DBA8;
+  font-family: 'Bitter', serif;
+}
+
+.appName {
+  font-family: 'Bitter', serif;
+}
+a {
+  color:#79BD9A;
+}
+
+a:hover {
+  color:#A8DBA8;
+}
+
+h1 {
+  font-size:4em;
+  color:#CFF09E;
+  margin-bottom:4px;
+  font-weight:lighter;
+  margin:0 0;
+}
+
+h3 {
+  margin:0;
+  color:#79BD9A;
+}
+
+body {
+  height: 100%;
+  margin:0;
+  padding:0;
+}
+
+#content{
+  width:100%;
+  height:100%;
+}
+
+#destinationLocInput {
+  width:280px;
+  height:30px;
+  font-size:16px;
+  border:none;
+}
+
+#filterCheckboxes {
+  list-style-type:none;
+  padding:0;
+  margin:4px;
+  color:#CFF09E;
+  font-size:1.2em;
+}
+
+#filterCheckboxes li {
+  display:inline;
+}
+
+.chkbox {
+  padding:10px;
+}
+
+#childMapDiv {
+  height:300px;
+  width: 50%;
+  margin: 0 auto;
+  padding: 0;
+}
+
+#map {
+  width: 600px;
+  max-width:100%;
+  height: 350px;
+  margin:20px auto;
+}
+
+#showRouteButton {
+  height:36px;
+  width:80px;
+  background-color:#79BD9A;
+  color:black;
+  font-size:1.1em;
+  border-radius:3px;
+  border:0;
+}
+
+#showRouteButton:hover {
+  background-color:#A8DBA8;
+}
+
+.gm-style .gm-style-iw {
+  color:black;
+}
+
+.searchContext {
+  margin-bottom:6px;
+}
