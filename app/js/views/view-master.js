@@ -36,6 +36,7 @@ module.exports = Backbone.View.extend({
   drawRouteButtonClicked: function(e) {
     e.preventDefault();
     childMapView.getDirections();
+    this.$el.children('h1, h3').hide();
   }
 
 });

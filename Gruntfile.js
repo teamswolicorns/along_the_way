@@ -7,11 +7,17 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-express-server');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-cssmin');
+  grunt.loadNpmTasks('grunt-contrib-htmlmin');
 
   grunt.initConfig({
     clean: {
       dev: {
         src: ['build/']
+      },
+      dist: {
+        src: ['dist/']
       }
     },
     copy: {
@@ -89,10 +95,39 @@ module.exports = function(grunt) {
     watch: {
       files: ['server.js', 'routes/**/*.js', 'app/**/*'],
       tasks: ['build']
+    },
+    uglify: {
+      dist: {
+        files: {
+          'dist/bundle.js': ['build/bundle.js']
+        }
+      }
+    },
+    htmlmin: {
+      dist: {
+        options: {
+          removeComments: true,
+          collapseWhitespace: true
+        },
+        files: {
+          'dist/index.html': 'app/index.html'
+        }
+      }
+    },
+    cssmin: {
+      dist: {
+        files: [{
+          expand: true,
+          cwd: 'app/css/',
+          src: ['*.css'],
+          dest: 'dist/css/'
+        }]
+      }
     }
   });
   grunt.registerTask('build', ['clean:dev', 'browserify:dev', 'copy:dev']);
   grunt.registerTask('default', ['jshint', 'build', 'express:dev', 'watch']);
   grunt.registerTask('test', ['browserify:test', 'mocha:backbonetest']);
-  grunt.registerTask('default', ['test']);
+  grunt.registerTask('shrink', ['browserify:dev', 'uglify', 'htmlmin:dist', 'cssmin:dist']);
+  grunt.registerTask('production', ['clean:dist', 'shrink']);
 };
