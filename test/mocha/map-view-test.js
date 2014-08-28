@@ -12,11 +12,11 @@ describe('Test the Map in the View', function() {
     done();
   });
 
-  // it('should call render on creation', function(done){
-  //   this.mapView = new MapView({model: Backbone.Model.extend({})});
-  //   expect(MapView.prototype.render.called).to.be.true;
-  //   done();
-  // });
+  it('should call render on creation ', function(done){
+    this.mapView = new MapView({model: Backbone.Model.extend({})});
+    expect(MapView.prototype.render.called).to.be.true;
+    done();
+  });
 
   // it('should not be empty', function(done) {
   //   expect(this.mapView.$el).to.not.eql('');

@@ -4,6 +4,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-mocha'); //mjg - added mocha
+  grunt.loadNpmTasks('grunt-simple-mocha');
   grunt.loadNpmTasks('grunt-express-server');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
@@ -60,6 +61,13 @@ module.exports = function(grunt) {
         }
       }
     },
+
+    simplemocha: {
+      all: {
+        src: ['test/mocha/map-view-test.js']
+      }
+    },
+
     jshint: {
       options: {
         curly: true,
@@ -92,5 +100,7 @@ module.exports = function(grunt) {
   });
   grunt.registerTask('build', ['clean:dev', 'browserify:dev', 'copy:dev']);
   grunt.registerTask('default', ['jshint', 'build', 'express:dev', 'watch']);
-  grunt.registerTask('test', ['browserify:test', 'mocha']);
+  grunt.registerTask('backbone:test', ['browserify:test', 'mocha:backbonetest']);
+  grunt.registerTask('test', ['backbone:test', 'simplemocha']);
+  grunt.registerTask('default', ['test']);
 };
