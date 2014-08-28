@@ -1,3 +1,4 @@
+'use strict';
 var chai = require('chai');
 var Backbone = require('backbone');
 var sinon = require('sinon');
@@ -14,7 +15,7 @@ describe('Testing the Map', function() {
   });
 
   it('Should have map options and be an object', function(done) {
-    expect(mapModel.mapOptions).to.be.ok; //checks that it's an object
+    expect(mapModel.get('mapOptions')).to.be.ok; //checks that it's an object
     done();
   });
 
@@ -24,8 +25,7 @@ describe('Testing the Map', function() {
   });
 
   it('Should have a list of place-types', function(done) {
-
-
+    // expect(mapModel.get('placeTypes')).should.have.length(3)
     done();
   });
 
