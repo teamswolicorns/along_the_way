@@ -1,3 +1,0 @@
-heroku config:set STATIC_DIR ='dist'
-
-add uglify and minify to Grunt
