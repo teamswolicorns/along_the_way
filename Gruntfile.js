@@ -38,7 +38,7 @@ module.exports = function(grunt) {
           transform: ['hbsfy', 'debowerify'],
           debug: true
         },
-        src: ['test/mocha/backbone/**/*.js'],
+        src: ['test/mocha/**/*.js'],
         dest: 'test/testbundle.js'
       }
     },
@@ -92,4 +92,5 @@ module.exports = function(grunt) {
   });
   grunt.registerTask('build', ['clean:dev', 'browserify:dev', 'copy:dev']);
   grunt.registerTask('default', ['jshint', 'build', 'express:dev', 'watch']);
+  grunt.registerTask('test', ['browserify:test', 'mocha']);
 };
