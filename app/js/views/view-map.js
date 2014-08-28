@@ -50,21 +50,6 @@ module.exports = Backbone.View.extend({
     this.render();
   },
 
-
-  createMarker: function(place) {
-    /* just a map marker factory */
-    var placeLoc = place.geometry.location;
-    var marker = new google.maps.Marker({
-      map: map,
-      position: place.geometry.location
-    });
-
-    google.maps.event.addListener(marker, 'click', function() {
-      placeInfoWindow.setContent(place.name);
-      placeInfoWindow.open(map, this);
-    });
-  },
-
   saveCheckboxData: function() {
     //new checkbox code for team review!
     var checkBoxes = $("form input:checkbox");
@@ -119,28 +104,26 @@ module.exports = Backbone.View.extend({
   getPlacesInBox: function(boxes, boxi) {
     //thanks for help with this solution is owed to https://gist.github.com/aisapatino/88d99e78abf55e7de051
     console.log("getting places in this box: " + boxes[boxi]);
-    //check if we're done
+
     if (boxi == boxes.length) {
       console.log("all boxes populated");
       return;
     }
 
-    console.log("boxi is " + boxi + " out of " + boxes.length);
-    //otherwise, build a request and make it
     var boxCenter = this.findMidpoint(boxes[boxi]);
     var self = this;
     var placesRequest = {
       location: new google.maps.LatLng(boxCenter[0], boxCenter[1]),
-      radius:2000, //meters
+      radius:1000, //meters
       types: this.model.get('placeTypes'),
       rankBy: google.maps.places.RankBy.PROMINENCE
     };
+
     //make an info window and run the placesRequest search
     placeInfoWindow = new google.maps.InfoWindow();
     placeService.nearbySearch(placesRequest, function(results, status) {
       /* handle the place services status */
       /* throttle too-fast requests with a one second wait */
-      console.log("status is: " + status);
       if (status === google.maps.places.PlacesServiceStatus.OK) {
         console.log('places status ok, making markers...');
         self.makeMarkersLoop(results);
@@ -151,7 +134,6 @@ module.exports = Backbone.View.extend({
             self.getPlacesInBox(boxes, boxi); //try again in the same box
           }, 2000);
       } else {
-        //handles "zero results"
         self.getPlacesInBox(boxes, boxi + 1);
       }
     });
@@ -252,6 +234,20 @@ module.exports = Backbone.View.extend({
         map:map
       });
     }
+  },
+
+  createMarker: function(place) {
+    /* just a map marker factory */
+    var placeLoc = place.geometry.location;
+    var marker = new google.maps.Marker({
+      map: map,
+      position: place.geometry.location
+    });
+
+    google.maps.event.addListener(marker, 'click', function() {
+      placeInfoWindow.setContent(place.name);
+      placeInfoWindow.open(map, this);
+    });
   },
 
   render: function() {
