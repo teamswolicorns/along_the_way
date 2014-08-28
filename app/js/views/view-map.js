@@ -39,11 +39,11 @@ module.exports = Backbone.View.extend({
     centerMap centers the map based on data in the model
     it also attaches a little "you are here" flag
     */
-    var infowindow = new google.maps.InfoWindow({
-        map: map,
-        position: this.model.get('mapOptions.center'),
-        content: 'You are here'
-    });
+    // var infowindow = new google.maps.InfoWindow({
+    //     map: map,
+    //     position: this.model.get('mapOptions.center'),
+    //     content: 'You are here'
+    // });
     map.setCenter(this.model.get('mapOptions.center')); //moved from render() because having it in render prevented the polyline from working
     this.render();
   },
@@ -131,6 +131,7 @@ module.exports = Backbone.View.extend({
 
 
   getDirections: function() {
+
     var self = this;
     /* makes a line between point A and point B */
     this.mapInit();
@@ -153,6 +154,8 @@ module.exports = Backbone.View.extend({
         self.createBoxRegion(response); //cannot access createBoxRegion from in here
       }
     });
+    this.$el.children('#map').css('opacity',1);
+
     this.render();
   },
 
