@@ -58,7 +58,6 @@ module.exports = Backbone.View.extend({
   },
 
   findPlacesInBoxBounds: function(box) {
-
     //find the midpoint of the box region that was passed in
     var northeast = box.getNorthEast();
     var southwest = box.getSouthWest();
@@ -75,10 +74,11 @@ module.exports = Backbone.View.extend({
     var placesRequest = {
       location: new google.maps.LatLng(lat, lng),
       //location: new google.maps.LatLngBounds(box),
-      //radius:500,
+      radius:500,
       types: this.model.get('placeTypes'),
-      rankBy: google.maps.places.RankBy.DISTANCE
+      //rankBy: google.maps.places.RankBy.DISTANCE
     };
+    console.log("getting these placeTypes from model: " + this.model.get('placeTypes'));
 
     placeInfoWindow = new google.maps.InfoWindow();
     placeService = new google.maps.places.PlacesService(map);
@@ -115,16 +115,27 @@ module.exports = Backbone.View.extend({
     }
   },
 
+  saveCheckboxData: function() {
+    //new checkbox code for team review!
+    var checkBoxes = $("form input:checkbox");
+    var checkBoxesArray = [];
+    for (var i = 0; i < checkBoxes.length; i ++) {
+      if (checkBoxes[i].checked) {
+        //console.log("found a checked box " + checkBoxes[i].value);
+        checkBoxesArray.push(checkBoxes[i].value);
+      }
+    }
+    this.model.set('placeTypes', checkBoxesArray);
+    console.log("setting placeTypes in the model to: " + this.model.get('placeTypes'));
+  },
+
+
   getDirections: function() {
     var self = this;
     /* makes a line between point A and point B */
     this.mapInit();
+    this.saveCheckboxData();
 
-    /*
-    getDirections is lifted almost verbatim from the maps API
-    except it pulls data from our model where appropriate
-    */
-    // console.log("called getDirections in view-map.js");
     directionsService = new google.maps.DirectionsService();
     directionsDisplay = new google.maps.DirectionsRenderer();
     directionsDisplay.setMap(map);
