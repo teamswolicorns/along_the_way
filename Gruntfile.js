@@ -66,6 +66,7 @@ module.exports = function(grunt) {
         }
       }
     },
+
     jshint: {
       options: {
         curly: true,
@@ -126,7 +127,7 @@ module.exports = function(grunt) {
   });
   grunt.registerTask('build', ['clean:dev', 'browserify:dev', 'copy:dev']);
   grunt.registerTask('default', ['jshint', 'build', 'express:dev', 'watch']);
-  grunt.registerTask('test', ['browserify:test', 'mocha']);
+  grunt.registerTask('test', ['browserify:test', 'mocha:backbonetest']);
   grunt.registerTask('shrink', ['browserify:dev', 'uglify', 'htmlmin:dist', 'cssmin:dist']);
   grunt.registerTask('production', ['clean:dist', 'shrink']);
 };
