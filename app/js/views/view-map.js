@@ -108,7 +108,7 @@ module.exports = Backbone.View.extend({
     //thanks for help with this solution is owed to https://gist.github.com/aisapatino/88d99e78abf55e7de051
     console.log("getting places in this box: " + boxes[boxi]);
 
-    if (boxi == boxes.length) {
+    if (boxi === boxes.length) {
       console.log("all boxes populated");
       return;
     }
