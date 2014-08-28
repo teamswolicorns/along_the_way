@@ -12181,9 +12181,219 @@ module.exports = Backbone.Model.extend({
 });
 
 },{"./../../bower_components/backbone/backbone.js":1,"./../../bower_components/jquery/dist/jquery.js":2}],5:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var Handlebars = require('hbsfy/runtime');
+module.exports = Handlebars.template({"compiler":[5,">= 2.0.0"],"main":function(depth0,helpers,partials,data) {
+  return "<div id=\"button-container\" style=\"height:100%\">\n  <form action=\"\">\n  <input id=\"destinationLocInput\" class=\"controls\" type=\"text\" placeholder=\"Enter destination\"></input><br>\n  <ul id=\"filterCheckboxes\">\n    <li><input type=\"checkbox\" name=\"filter\" value=\"Gyms\" class=\"chkbox\">Gyms</li>\n    <li><input type=\"checkbox\" name=\"filter\" value=\"Smoothies\" class=\"chkbox\">Smoothies</li>\n    <li><input type=\"checkbox\" name=\"filter\" value=\"Health\" class=\"chkbox\">Health Food</li>\n    <li><input type=\"checkbox\" name=\"filter\" value=\"Spas\" class=\"chkbox\">Spas</li>\n    </ul>\n    <button id=\"showRouteButton\">Draw Route!</button><br>\n  </form>\n</div>\n<div id=\"map\"></div>\n\n";
+  },"useData":true});
+
+},{"hbsfy/runtime":53}],6:[function(require,module,exports){
+//view-map is a child of view-master
+'use strict';
+var Backbone = require("./../../bower_components/backbone/backbone.js");
+var $ = require("./../../bower_components/jquery/dist/jquery.js");
+Backbone.$ = $;
+
+// TODO we should not have global variables
+//declare these vars out here so multiple view-map methods can access them
+var directionsService;
+var directionsDisplay;
+var map;
+var rboxer = new RouteBoxer();
+var placeInfoWindow;
+
+module.exports = Backbone.View.extend({
+  type: "Map View", //tutorial I read says this is good for debugging, not sure yet how it's used
+  // id: 'content',
+
+  initialize: function() {
+    var template = require('../templates/template-map.hbs');
+    var data = this.model.attributes;
+    this.$el.html(template(data));
+    /*
+    attach listener for a change to mapOptions.center, and when that change occurs, use this.centerMap
+    create a new map with mapOptions
+    */
+    this.model.on("change mapOptions.center", this.centerMap, this);
+    this.mapInit();
+    this.autoComplete();
+  },
+
+  mapInit: function() {
+    map = new google.maps.Map(this.$('#map').get(0),this.model.get('mapOptions'));
+  },
+
+  centerMap: function() {
+    /*
+    centerMap centers the map based on data in the model
+    it also attaches a little "you are here" flag
+    */
+    var infowindow = new google.maps.InfoWindow({
+        map: map,
+        position: this.model.get('mapOptions.center'),
+        content: 'You are here'
+    });
+    map.setCenter(this.model.get('mapOptions.center')); //moved from render() because having it in render prevented the polyline from working
+    this.render();
+  },
+
+  findPlaces: function() {
+    console.log("called findPlaces in view-map.js");
+    var placesRequest = {
+      location: this.model.get('mapOptions.center'),
+      radius:500,
+      //types:['gym','spa','bicycle_store']
+      types: this.model.get('placeTypes')
+    };
+
+    placeInfoWindow = new google.maps.InfoWindow();
+    var placeService = new google.maps.places.PlacesService(map);
+    placeService.nearbySearch(placesRequest, placeCallback);
+
+    function placeCallback(results, status) {
+      if (status === google.maps.places.PlacesServiceStatus.OK) {
+        for (var i = 0; i < results.length; i++) {
+          createMarker(results[i]);
+        }
+      }
+    }
+
+    function createMarker(place) {
+      var placeLoc = place.geometry.location;
+      var marker = new google.maps.Marker({
+        map: map,
+        position: place.geometry.location
+      });
+
+      google.maps.event.addListener(marker, 'click', function() {
+        placeInfoWindow.setContent(place.name);
+        placeInfoWindow.open(map, this);
+      });
+    }
+  },
+
+  getDirections: function() {
+    this.mapInit();
+
+    /*
+    getDirections is lifted almost verbatim from the maps API
+    except it pulls data from our model where appropriate
+    */
+    // console.log("called getDirections in view-map.js");
+    directionsService = new google.maps.DirectionsService();
+    directionsDisplay = new google.maps.DirectionsRenderer();
+
+    directionsDisplay.setMap(map);
+
+    var routeRequest = {
+      origin: this.model.get('mapOptions.center'),
+      destination: this.model.get('end'),
+      travelMode: google.maps.TravelMode.DRIVING
+    };
+
+    directionsService.route(routeRequest, function(response, status) {
+      if (status === google.maps.DirectionsStatus.OK) {
+        directionsDisplay.setDirections(response);
+
+
+        var route = response.routes[0];
+        var distance = 6; //km
+
+        var path = response.routes[0].overview_path;
+        var boxes = rboxer.box(path, distance);
+        drawBoxes(boxes); //comment to turn off boxes
+
+        for (var i = 0; i < boxes.length; i ++ ) {
+          var bounds = boxes[i];
+          console.log("making a box");
+        }
+      }
+
+      //draw the array of boxes as polylines on the map
+      var boxpolys = null;
+      function drawBoxes(boxes) {
+        boxpolys = new Array(boxes.length);
+        for (var i = 0; i < boxes.length; i++) {
+          boxpolys[i] = new google.maps.Rectangle({
+            bounds: boxes[i],
+            fillOpacity:0,
+            strokeOpacity: 1.0,
+            strokeColor: '#000000',
+            strokeWeight:1,
+            map:map
+          });
+        }
+      }
+
+    });
+    this.findPlaces();
+    this.render();
+  },
+
+  autoComplete: function() {
+    var self = this;
+    var input = this.$('#destinationLocInput').get(0);
+
+    var autocomplete = new google.maps.places.Autocomplete(input);
+      autocomplete.bindTo('bounds', map);
+
+    var infowindow = new google.maps.InfoWindow();
+    var marker = new google.maps.Marker({
+      map: map,
+      anchorPoint: new google.maps.Point(0, -29)
+    });
+
+    google.maps.event.addListener(autocomplete, 'place_changed', function() {
+        infowindow.close();
+        marker.setVisible(false);
+    var place = autocomplete.getPlace();
+      if (!place.geometry) {
+        return;
+      }
+          // If the place has a geometry, then present it on a map.
+      if (place.geometry.viewport) {
+        map.fitBounds(place.geometry.viewport);
+
+        // set end point for route - john
+        self.model.set('end', new google.maps.LatLng(place.geometry.location.k, place.geometry.location.B));
+      }
+      else {
+        map.setCenter(place.geometry.location);
+        map.setZoom(17);  // Why 17? Because it looks good.
+      }
+      marker.setIcon(/** @type {google.maps.Icon} */({
+        url: place.icon,
+        size: new google.maps.Size(71, 71),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(17, 34),
+        scaledSize: new google.maps.Size(35, 35)
+      }));
+      marker.setPosition(place.geometry.location);
+      marker.setVisible(true);
+
+      var address = '';
+      if (place.address_components) {
+        address = [
+          (place.address_components[0] && place.address_components[0].short_name || ''),
+          (place.address_components[1] && place.address_components[1].short_name || ''),
+          (place.address_components[2] && place.address_components[2].short_name || '')
+        ].join(' ');
+      }
+
+      infowindow.setContent('<div><strong>' + place.name + '</strong><br>' + address);
+      infowindow.open(map, marker);
+   });
+  },
+
+  render: function() {
+    return this; // returns everything in the map-conatiner div (google map api, new map with map options model)
+  }
+});
+
+},{"../templates/template-map.hbs":5,"./../../bower_components/backbone/backbone.js":1,"./../../bower_components/jquery/dist/jquery.js":2}],7:[function(require,module,exports){
 module.exports = require('./lib/chai');
 
-},{"./lib/chai":6}],6:[function(require,module,exports){
+},{"./lib/chai":8}],8:[function(require,module,exports){
 /*!
  * chai
  * Copyright(c) 2011-2014 Jake Luer <jake@alogicalparadox.com>
@@ -12272,7 +12482,7 @@ exports.use(should);
 var assert = require('./chai/interface/assert');
 exports.use(assert);
 
-},{"./chai/assertion":7,"./chai/config":8,"./chai/core/assertions":9,"./chai/interface/assert":10,"./chai/interface/expect":11,"./chai/interface/should":12,"./chai/utils":23,"assertion-error":32}],7:[function(require,module,exports){
+},{"./chai/assertion":9,"./chai/config":10,"./chai/core/assertions":11,"./chai/interface/assert":12,"./chai/interface/expect":13,"./chai/interface/should":14,"./chai/utils":25,"assertion-error":34}],9:[function(require,module,exports){
 /*!
  * chai
  * http://chaijs.com
@@ -12404,7 +12614,7 @@ module.exports = function (_chai, util) {
   });
 };
 
-},{"./config":8}],8:[function(require,module,exports){
+},{"./config":10}],10:[function(require,module,exports){
 module.exports = {
 
   /**
@@ -12456,7 +12666,7 @@ module.exports = {
 
 };
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 /*!
  * chai
  * http://chaijs.com
@@ -13772,7 +13982,7 @@ module.exports = function (chai, _) {
   });
 };
 
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 /*!
  * chai
  * Copyright(c) 2011-2014 Jake Luer <jake@alogicalparadox.com>
@@ -14830,7 +15040,7 @@ module.exports = function (chai, util) {
   ('Throw', 'throws');
 };
 
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 /*!
  * chai
  * Copyright(c) 2011-2014 Jake Luer <jake@alogicalparadox.com>
@@ -14844,7 +15054,7 @@ module.exports = function (chai, util) {
 };
 
 
-},{}],12:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 /*!
  * chai
  * Copyright(c) 2011-2014 Jake Luer <jake@alogicalparadox.com>
@@ -14924,7 +15134,7 @@ module.exports = function (chai, util) {
   chai.Should = loadShould;
 };
 
-},{}],13:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 /*!
  * Chai - addChainingMethod utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -15037,7 +15247,7 @@ module.exports = function (ctx, name, method, chainingBehavior) {
   });
 };
 
-},{"../config":8,"./flag":16,"./transferFlags":30}],14:[function(require,module,exports){
+},{"../config":10,"./flag":18,"./transferFlags":32}],16:[function(require,module,exports){
 /*!
  * Chai - addMethod utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -15082,7 +15292,7 @@ module.exports = function (ctx, name, method) {
   };
 };
 
-},{"../config":8,"./flag":16}],15:[function(require,module,exports){
+},{"../config":10,"./flag":18}],17:[function(require,module,exports){
 /*!
  * Chai - addProperty utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -15124,7 +15334,7 @@ module.exports = function (ctx, name, getter) {
   });
 };
 
-},{}],16:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 /*!
  * Chai - flag utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -15158,7 +15368,7 @@ module.exports = function (obj, key, value) {
   }
 };
 
-},{}],17:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 /*!
  * Chai - getActual utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -15178,7 +15388,7 @@ module.exports = function (obj, args) {
   return args.length > 4 ? args[4] : obj._obj;
 };
 
-},{}],18:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 /*!
  * Chai - getEnumerableProperties utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -15205,7 +15415,7 @@ module.exports = function getEnumerableProperties(object) {
   return result;
 };
 
-},{}],19:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /*!
  * Chai - message composition utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -15256,7 +15466,7 @@ module.exports = function (obj, args) {
   return flagMsg ? flagMsg + ': ' + msg : msg;
 };
 
-},{"./flag":16,"./getActual":17,"./inspect":24,"./objDisplay":25}],20:[function(require,module,exports){
+},{"./flag":18,"./getActual":19,"./inspect":26,"./objDisplay":27}],22:[function(require,module,exports){
 /*!
  * Chai - getName utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -15278,7 +15488,7 @@ module.exports = function (func) {
   return match && match[1] ? match[1] : "";
 };
 
-},{}],21:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 /*!
  * Chai - getPathValue utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -15382,7 +15592,7 @@ function _getPathValue (parsed, obj) {
   return res;
 };
 
-},{}],22:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 /*!
  * Chai - getProperties utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -15419,7 +15629,7 @@ module.exports = function getProperties(object) {
   return result;
 };
 
-},{}],23:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 /*!
  * chai
  * Copyright(c) 2011 Jake Luer <jake@alogicalparadox.com>
@@ -15535,7 +15745,7 @@ exports.addChainableMethod = require('./addChainableMethod');
 exports.overwriteChainableMethod = require('./overwriteChainableMethod');
 
 
-},{"./addChainableMethod":13,"./addMethod":14,"./addProperty":15,"./flag":16,"./getActual":17,"./getMessage":19,"./getName":20,"./getPathValue":21,"./inspect":24,"./objDisplay":25,"./overwriteChainableMethod":26,"./overwriteMethod":27,"./overwriteProperty":28,"./test":29,"./transferFlags":30,"./type":31,"deep-eql":33}],24:[function(require,module,exports){
+},{"./addChainableMethod":15,"./addMethod":16,"./addProperty":17,"./flag":18,"./getActual":19,"./getMessage":21,"./getName":22,"./getPathValue":23,"./inspect":26,"./objDisplay":27,"./overwriteChainableMethod":28,"./overwriteMethod":29,"./overwriteProperty":30,"./test":31,"./transferFlags":32,"./type":33,"deep-eql":35}],26:[function(require,module,exports){
 // This is (almost) directly from Node.js utils
 // https://github.com/joyent/node/blob/f8c335d0caf47f16d31413f89aa28eda3878e3aa/lib/util.js
 
@@ -15857,7 +16067,7 @@ function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
 
-},{"./getEnumerableProperties":18,"./getName":20,"./getProperties":22}],25:[function(require,module,exports){
+},{"./getEnumerableProperties":20,"./getName":22,"./getProperties":24}],27:[function(require,module,exports){
 /*!
  * Chai - flag utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -15908,7 +16118,7 @@ module.exports = function (obj) {
   }
 };
 
-},{"../config":8,"./inspect":24}],26:[function(require,module,exports){
+},{"../config":10,"./inspect":26}],28:[function(require,module,exports){
 /*!
  * Chai - overwriteChainableMethod utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -15963,7 +16173,7 @@ module.exports = function (ctx, name, method, chainingBehavior) {
   };
 };
 
-},{}],27:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 /*!
  * Chai - overwriteMethod utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -16016,7 +16226,7 @@ module.exports = function (ctx, name, method) {
   }
 };
 
-},{}],28:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 /*!
  * Chai - overwriteProperty utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -16072,7 +16282,7 @@ module.exports = function (ctx, name, getter) {
   });
 };
 
-},{}],29:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 /*!
  * Chai - test utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -16100,7 +16310,7 @@ module.exports = function (obj, args) {
   return negate ? !expr : expr;
 };
 
-},{"./flag":16}],30:[function(require,module,exports){
+},{"./flag":18}],32:[function(require,module,exports){
 /*!
  * Chai - transferFlags utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -16146,7 +16356,7 @@ module.exports = function (assertion, object, includeAll) {
   }
 };
 
-},{}],31:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 /*!
  * Chai - type utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
@@ -16193,7 +16403,7 @@ module.exports = function (obj) {
   return typeof obj;
 };
 
-},{}],32:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 /*!
  * assertion-error
  * Copyright(c) 2013 Jake Luer <jake@qualiancy.com>
@@ -16305,10 +16515,10 @@ AssertionError.prototype.toJSON = function (stack) {
   return props;
 };
 
-},{}],33:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 module.exports = require('./lib/eql');
 
-},{"./lib/eql":34}],34:[function(require,module,exports){
+},{"./lib/eql":36}],36:[function(require,module,exports){
 /*!
  * deep-eql
  * Copyright(c) 2013 Jake Luer <jake@alogicalparadox.com>
@@ -16567,10 +16777,10 @@ function objectEqual(a, b, m) {
   return true;
 }
 
-},{"buffer":37,"type-detect":35}],35:[function(require,module,exports){
+},{"buffer":39,"type-detect":37}],37:[function(require,module,exports){
 module.exports = require('./lib/type');
 
-},{"./lib/type":36}],36:[function(require,module,exports){
+},{"./lib/type":38}],38:[function(require,module,exports){
 /*!
  * type-detect
  * Copyright(c) 2013 jake luer <jake@alogicalparadox.com>
@@ -16714,7 +16924,7 @@ Library.prototype.test = function (obj, type) {
   }
 };
 
-},{}],37:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -17885,7 +18095,7 @@ function assert (test, message) {
   if (!test) throw new Error(message || 'Failed assertion')
 }
 
-},{"base64-js":38,"ieee754":39}],38:[function(require,module,exports){
+},{"base64-js":40,"ieee754":41}],40:[function(require,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -18007,7 +18217,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],39:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 exports.read = function(buffer, offset, isLE, mLen, nBytes) {
   var e, m,
       eLen = nBytes * 8 - mLen - 1,
@@ -18093,7 +18303,7 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128;
 };
 
-},{}],40:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -18118,7 +18328,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],41:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -18183,14 +18393,14 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],42:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],43:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -18780,7 +18990,581 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require("JkpR2F"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":42,"JkpR2F":41,"inherits":40}],44:[function(require,module,exports){
+},{"./support/isBuffer":44,"JkpR2F":43,"inherits":42}],46:[function(require,module,exports){
+"use strict";
+/*globals Handlebars: true */
+var base = require("./handlebars/base");
+
+// Each of these augment the Handlebars object. No need to setup here.
+// (This is done to easily share code between commonjs and browse envs)
+var SafeString = require("./handlebars/safe-string")["default"];
+var Exception = require("./handlebars/exception")["default"];
+var Utils = require("./handlebars/utils");
+var runtime = require("./handlebars/runtime");
+
+// For compatibility and usage outside of module systems, make the Handlebars object a namespace
+var create = function() {
+  var hb = new base.HandlebarsEnvironment();
+
+  Utils.extend(hb, base);
+  hb.SafeString = SafeString;
+  hb.Exception = Exception;
+  hb.Utils = Utils;
+
+  hb.VM = runtime;
+  hb.template = function(spec) {
+    return runtime.template(spec, hb);
+  };
+
+  return hb;
+};
+
+var Handlebars = create();
+Handlebars.create = create;
+
+exports["default"] = Handlebars;
+},{"./handlebars/base":47,"./handlebars/exception":48,"./handlebars/runtime":49,"./handlebars/safe-string":50,"./handlebars/utils":51}],47:[function(require,module,exports){
+"use strict";
+var Utils = require("./utils");
+var Exception = require("./exception")["default"];
+
+var VERSION = "2.0.0-alpha.4";
+exports.VERSION = VERSION;var COMPILER_REVISION = 5;
+exports.COMPILER_REVISION = COMPILER_REVISION;
+var REVISION_CHANGES = {
+  1: '<= 1.0.rc.2', // 1.0.rc.2 is actually rev2 but doesn't report it
+  2: '== 1.0.0-rc.3',
+  3: '== 1.0.0-rc.4',
+  4: '== 1.x.x',
+  5: '>= 2.0.0'
+};
+exports.REVISION_CHANGES = REVISION_CHANGES;
+var isArray = Utils.isArray,
+    isFunction = Utils.isFunction,
+    toString = Utils.toString,
+    objectType = '[object Object]';
+
+function HandlebarsEnvironment(helpers, partials) {
+  this.helpers = helpers || {};
+  this.partials = partials || {};
+
+  registerDefaultHelpers(this);
+}
+
+exports.HandlebarsEnvironment = HandlebarsEnvironment;HandlebarsEnvironment.prototype = {
+  constructor: HandlebarsEnvironment,
+
+  logger: logger,
+  log: log,
+
+  registerHelper: function(name, fn, inverse) {
+    if (toString.call(name) === objectType) {
+      if (inverse || fn) { throw new Exception('Arg not supported with multiple helpers'); }
+      Utils.extend(this.helpers, name);
+    } else {
+      if (inverse) { fn.not = inverse; }
+      this.helpers[name] = fn;
+    }
+  },
+  unregisterHelper: function(name) {
+    delete this.helpers[name];
+  },
+
+  registerPartial: function(name, str) {
+    if (toString.call(name) === objectType) {
+      Utils.extend(this.partials,  name);
+    } else {
+      this.partials[name] = str;
+    }
+  },
+  unregisterPartial: function(name) {
+    delete this.partials[name];
+  }
+};
+
+function registerDefaultHelpers(instance) {
+  instance.registerHelper('helperMissing', function(/* [args, ]options */) {
+    if(arguments.length === 1) {
+      // A missing field in a {{foo}} constuct.
+      return undefined;
+    } else {
+      // Someone is actually trying to call something, blow up.
+      throw new Exception("Missing helper: '" + arguments[arguments.length-1].name + "'");
+    }
+  });
+
+  instance.registerHelper('blockHelperMissing', function(context, options) {
+    var inverse = options.inverse || function() {}, fn = options.fn;
+
+    if (isFunction(context)) { context = context.call(this); }
+
+    if(context === true) {
+      return fn(this);
+    } else if(context === false || context == null) {
+      return inverse(this);
+    } else if (isArray(context)) {
+      if(context.length > 0) {
+        if (options.ids) {
+          options.ids = [options.name];
+        }
+
+        return instance.helpers.each(context, options);
+      } else {
+        return inverse(this);
+      }
+    } else {
+      if (options.data && options.ids) {
+        var data = createFrame(options.data);
+        data.contextPath = Utils.appendContextPath(options.data.contextPath, options.name);
+        options = {data: data};
+      }
+
+      return fn(context, options);
+    }
+  });
+
+  instance.registerHelper('each', function(context, options) {
+    // Allow for {{#each}}
+    if (!options) {
+      options = context;
+      context = this;
+    }
+
+    var fn = options.fn, inverse = options.inverse;
+    var i = 0, ret = "", data;
+
+    var contextPath;
+    if (options.data && options.ids) {
+      contextPath = Utils.appendContextPath(options.data.contextPath, options.ids[0]) + '.';
+    }
+
+    if (isFunction(context)) { context = context.call(this); }
+
+    if (options.data) {
+      data = createFrame(options.data);
+    }
+
+    if(context && typeof context === 'object') {
+      if (isArray(context)) {
+        for(var j = context.length; i<j; i++) {
+          if (data) {
+            data.index = i;
+            data.first = (i === 0);
+            data.last  = (i === (context.length-1));
+
+            if (contextPath) {
+              data.contextPath = contextPath + i;
+            }
+          }
+          ret = ret + fn(context[i], { data: data });
+        }
+      } else {
+        for(var key in context) {
+          if(context.hasOwnProperty(key)) {
+            if(data) {
+              data.key = key;
+              data.index = i;
+              data.first = (i === 0);
+
+              if (contextPath) {
+                data.contextPath = contextPath + key;
+              }
+            }
+            ret = ret + fn(context[key], {data: data});
+            i++;
+          }
+        }
+      }
+    }
+
+    if(i === 0){
+      ret = inverse(this);
+    }
+
+    return ret;
+  });
+
+  instance.registerHelper('if', function(conditional, options) {
+    if (isFunction(conditional)) { conditional = conditional.call(this); }
+
+    // Default behavior is to render the positive path if the value is truthy and not empty.
+    // The `includeZero` option may be set to treat the condtional as purely not empty based on the
+    // behavior of isEmpty. Effectively this determines if 0 is handled by the positive path or negative.
+    if ((!options.hash.includeZero && !conditional) || Utils.isEmpty(conditional)) {
+      return options.inverse(this);
+    } else {
+      return options.fn(this);
+    }
+  });
+
+  instance.registerHelper('unless', function(conditional, options) {
+    return instance.helpers['if'].call(this, conditional, {fn: options.inverse, inverse: options.fn, hash: options.hash});
+  });
+
+  instance.registerHelper('with', function(context, options) {
+    if (isFunction(context)) { context = context.call(this); }
+
+    var fn = options.fn;
+
+    if (!Utils.isEmpty(context)) {
+      if (options.data && options.ids) {
+        var data = createFrame(options.data);
+        data.contextPath = Utils.appendContextPath(options.data.contextPath, options.ids[0]);
+        options = {data:data};
+      }
+
+      return fn(context, options);
+    }
+  });
+
+  instance.registerHelper('log', function(context, options) {
+    var level = options.data && options.data.level != null ? parseInt(options.data.level, 10) : 1;
+    instance.log(level, context);
+  });
+
+  instance.registerHelper('lookup', function(obj, field, options) {
+    return obj && obj[field];
+  });
+}
+
+var logger = {
+  methodMap: { 0: 'debug', 1: 'info', 2: 'warn', 3: 'error' },
+
+  // State enum
+  DEBUG: 0,
+  INFO: 1,
+  WARN: 2,
+  ERROR: 3,
+  level: 3,
+
+  // can be overridden in the host environment
+  log: function(level, obj) {
+    if (logger.level <= level) {
+      var method = logger.methodMap[level];
+      if (typeof console !== 'undefined' && console[method]) {
+        console[method].call(console, obj);
+      }
+    }
+  }
+};
+exports.logger = logger;
+function log(level, obj) { logger.log(level, obj); }
+
+exports.log = log;var createFrame = function(object) {
+  var frame = Utils.extend({}, object);
+  frame._parent = object;
+  return frame;
+};
+exports.createFrame = createFrame;
+},{"./exception":48,"./utils":51}],48:[function(require,module,exports){
+"use strict";
+
+var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'number', 'stack'];
+
+function Exception(message, node) {
+  var line;
+  if (node && node.firstLine) {
+    line = node.firstLine;
+
+    message += ' - ' + line + ':' + node.firstColumn;
+  }
+
+  var tmp = Error.prototype.constructor.call(this, message);
+
+  // Unfortunately errors are not enumerable in Chrome (at least), so `for prop in tmp` doesn't work.
+  for (var idx = 0; idx < errorProps.length; idx++) {
+    this[errorProps[idx]] = tmp[errorProps[idx]];
+  }
+
+  if (line) {
+    this.lineNumber = line;
+    this.column = node.firstColumn;
+  }
+}
+
+Exception.prototype = new Error();
+
+exports["default"] = Exception;
+},{}],49:[function(require,module,exports){
+"use strict";
+var Utils = require("./utils");
+var Exception = require("./exception")["default"];
+var COMPILER_REVISION = require("./base").COMPILER_REVISION;
+var REVISION_CHANGES = require("./base").REVISION_CHANGES;
+var createFrame = require("./base").createFrame;
+
+function checkRevision(compilerInfo) {
+  var compilerRevision = compilerInfo && compilerInfo[0] || 1,
+      currentRevision = COMPILER_REVISION;
+
+  if (compilerRevision !== currentRevision) {
+    if (compilerRevision < currentRevision) {
+      var runtimeVersions = REVISION_CHANGES[currentRevision],
+          compilerVersions = REVISION_CHANGES[compilerRevision];
+      throw new Exception("Template was precompiled with an older version of Handlebars than the current runtime. "+
+            "Please update your precompiler to a newer version ("+runtimeVersions+") or downgrade your runtime to an older version ("+compilerVersions+").");
+    } else {
+      // Use the embedded version info since the runtime doesn't know about this revision yet
+      throw new Exception("Template was precompiled with a newer version of Handlebars than the current runtime. "+
+            "Please update your runtime to a newer version ("+compilerInfo[1]+").");
+    }
+  }
+}
+
+exports.checkRevision = checkRevision;// TODO: Remove this line and break up compilePartial
+
+function template(templateSpec, env) {
+  if (!env) {
+    throw new Exception("No environment passed to template");
+  }
+
+  // Note: Using env.VM references rather than local var references throughout this section to allow
+  // for external users to override these as psuedo-supported APIs.
+  env.VM.checkRevision(templateSpec.compiler);
+
+  var invokePartialWrapper = function(partial, name, context, hash, helpers, partials, data) {
+    if (hash) {
+      context = Utils.extend({}, context, hash);
+    }
+
+    var result = env.VM.invokePartial.call(this, partial, name, context, helpers, partials, data);
+    if (result != null) { return result; }
+
+    if (env.compile) {
+      var options = { helpers: helpers, partials: partials, data: data };
+      partials[name] = env.compile(partial, { data: data !== undefined }, env);
+      return partials[name](context, options);
+    } else {
+      throw new Exception("The partial " + name + " could not be compiled when running in runtime-only mode");
+    }
+  };
+
+  // Just add water
+  var container = {
+    escapeExpression: Utils.escapeExpression,
+    invokePartial: invokePartialWrapper,
+
+    fn: function(i) {
+      return templateSpec[i];
+    },
+
+    programs: [],
+    program: function(i, data) {
+      var programWrapper = this.programs[i],
+          fn = this.fn(i);
+      if(data) {
+        programWrapper = program(this, i, fn, data);
+      } else if (!programWrapper) {
+        programWrapper = this.programs[i] = program(this, i, fn);
+      }
+      return programWrapper;
+    },
+    programWithDepth: env.VM.programWithDepth,
+
+    data: function(data, depth) {
+      while (data && depth--) {
+        data = data._parent;
+      }
+      return data;
+    },
+    merge: function(param, common) {
+      var ret = param || common;
+
+      if (param && common && (param !== common)) {
+        ret = Utils.extend({}, common, param);
+      }
+
+      return ret;
+    },
+
+    noop: env.VM.noop,
+    compilerInfo: templateSpec.compiler
+  };
+
+  var ret = function(context, options) {
+    options = options || {};
+    var helpers,
+        partials,
+        data = options.data;
+
+    ret._setup(options);
+    if (!options.partial && templateSpec.useData) {
+      data = initData(context, data);
+    }
+    return templateSpec.main.call(container, context, container.helpers, container.partials, data);
+  };
+
+  ret._setup = function(options) {
+    if (!options.partial) {
+      container.helpers = container.merge(options.helpers, env.helpers);
+
+      if (templateSpec.usePartial) {
+        container.partials = container.merge(options.partials, env.partials);
+      }
+    } else {
+      container.helpers = options.helpers;
+      container.partials = options.partials;
+    }
+  };
+
+  ret._child = function(i) {
+    return container.programWithDepth(i);
+  };
+  return ret;
+}
+
+exports.template = template;function programWithDepth(i, data /*, $depth */) {
+  /*jshint -W040 */
+  var args = Array.prototype.slice.call(arguments, 2),
+      container = this,
+      fn = container.fn(i);
+
+  var prog = function(context, options) {
+    options = options || {};
+
+    return fn.apply(container, [context, container.helpers, container.partials, options.data || data].concat(args));
+  };
+  prog.program = i;
+  prog.depth = args.length;
+  return prog;
+}
+
+exports.programWithDepth = programWithDepth;function program(container, i, fn, data) {
+  var prog = function(context, options) {
+    options = options || {};
+
+    return fn.call(container, context, container.helpers, container.partials, options.data || data);
+  };
+  prog.program = i;
+  prog.depth = 0;
+  return prog;
+}
+
+exports.program = program;function invokePartial(partial, name, context, helpers, partials, data) {
+  var options = { partial: true, helpers: helpers, partials: partials, data: data };
+
+  if(partial === undefined) {
+    throw new Exception("The partial " + name + " could not be found");
+  } else if(partial instanceof Function) {
+    return partial(context, options);
+  }
+}
+
+exports.invokePartial = invokePartial;function noop() { return ""; }
+
+exports.noop = noop;function initData(context, data) {
+  if (!data || !('root' in data)) {
+    data = data ? createFrame(data) : {};
+    data.root = context;
+  }
+  return data;
+}
+},{"./base":47,"./exception":48,"./utils":51}],50:[function(require,module,exports){
+"use strict";
+// Build out our basic SafeString type
+function SafeString(string) {
+  this.string = string;
+}
+
+SafeString.prototype.toString = function() {
+  return "" + this.string;
+};
+
+exports["default"] = SafeString;
+},{}],51:[function(require,module,exports){
+"use strict";
+/*jshint -W004 */
+var SafeString = require("./safe-string")["default"];
+
+var escape = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#x27;",
+  "`": "&#x60;"
+};
+
+var badChars = /[&<>"'`]/g;
+var possible = /[&<>"'`]/;
+
+function escapeChar(chr) {
+  return escape[chr] || "&amp;";
+}
+
+function extend(obj /* , ...source */) {
+  for (var i = 1; i < arguments.length; i++) {
+    for (var key in arguments[i]) {
+      if (Object.prototype.hasOwnProperty.call(arguments[i], key)) {
+        obj[key] = arguments[i][key];
+      }
+    }
+  }
+
+  return obj;
+}
+
+exports.extend = extend;var toString = Object.prototype.toString;
+exports.toString = toString;
+// Sourced from lodash
+// https://github.com/bestiejs/lodash/blob/master/LICENSE.txt
+var isFunction = function(value) {
+  return typeof value === 'function';
+};
+// fallback for older versions of Chrome and Safari
+if (isFunction(/x/)) {
+  isFunction = function(value) {
+    return typeof value === 'function' && toString.call(value) === '[object Function]';
+  };
+}
+var isFunction;
+exports.isFunction = isFunction;
+var isArray = Array.isArray || function(value) {
+  return (value && typeof value === 'object') ? toString.call(value) === '[object Array]' : false;
+};
+exports.isArray = isArray;
+
+function escapeExpression(string) {
+  // don't escape SafeStrings, since they're already safe
+  if (string instanceof SafeString) {
+    return string.toString();
+  } else if (!string && string !== 0) {
+    return "";
+  }
+
+  // Force a string conversion as this will be done by the append regardless and
+  // the regex test will do this transparently behind the scenes, causing issues if
+  // an object's to string has escaped characters in it.
+  string = "" + string;
+
+  if(!possible.test(string)) { return string; }
+  return string.replace(badChars, escapeChar);
+}
+
+exports.escapeExpression = escapeExpression;function isEmpty(value) {
+  if (!value && value !== 0) {
+    return true;
+  } else if (isArray(value) && value.length === 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+exports.isEmpty = isEmpty;function appendContextPath(contextPath, id) {
+  return (contextPath ? contextPath + '.' : '') + id;
+}
+
+exports.appendContextPath = appendContextPath;
+},{"./safe-string":50}],52:[function(require,module,exports){
+// Create a simple path alias to allow browserify to resolve
+// the runtime on a supported path.
+module.exports = require('./dist/cjs/handlebars.runtime');
+
+},{"./dist/cjs/handlebars.runtime":46}],53:[function(require,module,exports){
+module.exports = require("handlebars/runtime")["default"];
+
+},{"handlebars/runtime":52}],54:[function(require,module,exports){
 /*jslint eqeqeq: false, onevar: false, forin: true, nomen: false, regexp: false, plusplus: false*/
 /*global module, require, __dirname, document*/
 /**
@@ -19165,7 +19949,7 @@ var sinon = (function (formatio) {
     return sinon;
 }(typeof formatio == "object" && formatio));
 
-},{"./sinon/assert":45,"./sinon/behavior":46,"./sinon/call":47,"./sinon/collection":48,"./sinon/match":49,"./sinon/mock":50,"./sinon/sandbox":51,"./sinon/spy":52,"./sinon/stub":53,"./sinon/test":54,"./sinon/test_case":55,"formatio":57,"util":43}],45:[function(require,module,exports){
+},{"./sinon/assert":55,"./sinon/behavior":56,"./sinon/call":57,"./sinon/collection":58,"./sinon/match":59,"./sinon/mock":60,"./sinon/sandbox":61,"./sinon/spy":62,"./sinon/stub":63,"./sinon/test":64,"./sinon/test_case":65,"formatio":67,"util":45}],55:[function(require,module,exports){
 (function (global){
 /**
  * @depend ../sinon.js
@@ -19368,7 +20152,7 @@ var sinon = (function (formatio) {
 }(typeof sinon == "object" && sinon || null, typeof window != "undefined" ? window : (typeof self != "undefined") ? self : global));
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../sinon":44}],46:[function(require,module,exports){
+},{"../sinon":54}],56:[function(require,module,exports){
 (function (process){
 /**
  * @depend ../sinon.js
@@ -19706,7 +20490,7 @@ var sinon = (function (formatio) {
 }(typeof sinon == "object" && sinon || null));
 
 }).call(this,require("JkpR2F"))
-},{"../sinon":44,"JkpR2F":41}],47:[function(require,module,exports){
+},{"../sinon":54,"JkpR2F":43}],57:[function(require,module,exports){
 /**
   * @depend ../sinon.js
   * @depend match.js
@@ -19913,7 +20697,7 @@ var sinon = (function (formatio) {
 }(typeof sinon == "object" && sinon || null));
 
 
-},{"../sinon":44}],48:[function(require,module,exports){
+},{"../sinon":54}],58:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend stub.js
@@ -20070,7 +20854,7 @@ var sinon = (function (formatio) {
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":44}],49:[function(require,module,exports){
+},{"../sinon":54}],59:[function(require,module,exports){
 /* @depend ../sinon.js */
 /*jslint eqeqeq: false, onevar: false, plusplus: false*/
 /*global module, require, sinon*/
@@ -20317,7 +21101,7 @@ var sinon = (function (formatio) {
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":44}],50:[function(require,module,exports){
+},{"../sinon":54}],60:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend stub.js
@@ -20770,7 +21554,7 @@ var sinon = (function (formatio) {
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":44,"./match":49}],51:[function(require,module,exports){
+},{"../sinon":54,"./match":59}],61:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend collection.js
@@ -20916,7 +21700,7 @@ if (typeof module !== "undefined" && module.exports && typeof require == "functi
     }
 }());
 
-},{"../sinon":44,"./util/fake_timers":56}],52:[function(require,module,exports){
+},{"../sinon":54,"./util/fake_timers":66}],62:[function(require,module,exports){
 /**
   * @depend ../sinon.js
   * @depend call.js
@@ -21335,7 +22119,7 @@ if (typeof module !== "undefined" && module.exports && typeof require == "functi
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":44}],53:[function(require,module,exports){
+},{"../sinon":54}],63:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend spy.js
@@ -21498,7 +22282,7 @@ if (typeof module !== "undefined" && module.exports && typeof require == "functi
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":44}],54:[function(require,module,exports){
+},{"../sinon":54}],64:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend stub.js
@@ -21585,7 +22369,7 @@ if (typeof module !== "undefined" && module.exports && typeof require == "functi
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":44}],55:[function(require,module,exports){
+},{"../sinon":54}],65:[function(require,module,exports){
 /**
  * @depend ../sinon.js
  * @depend test.js
@@ -21686,7 +22470,7 @@ if (typeof module !== "undefined" && module.exports && typeof require == "functi
     }
 }(typeof sinon == "object" && sinon || null));
 
-},{"../sinon":44}],56:[function(require,module,exports){
+},{"../sinon":54}],66:[function(require,module,exports){
 (function (global){
 /*jslint eqeqeq: false, plusplus: false, evil: true, onevar: false, browser: true, forin: false*/
 /*global module, require, window*/
@@ -22099,7 +22883,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],57:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 (function (global){
 ((typeof define === "function" && define.amd && function (m) {
     define("formatio", ["samsam"], m);
@@ -22302,7 +23086,7 @@ if (typeof module !== 'undefined' && module.exports) {
 });
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"samsam":58}],58:[function(require,module,exports){
+},{"samsam":68}],68:[function(require,module,exports){
 ((typeof define === "function" && define.amd && function (m) { define("samsam", m); }) ||
  (typeof module === "object" &&
       function (m) { module.exports = m(); }) || // Node
@@ -22688,7 +23472,41 @@ if (typeof module !== 'undefined' && module.exports) {
     };
 });
 
-},{}],59:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
+'use strict';
+var chai = require('chai');
+var Backbone = require("./../../app/bower_components/backbone/backbone.js");
+var sinon = require('sinon');
+var expect = chai.expect;
+
+var MapView = require('../../app/js/views/view-map.js');
+
+describe('Test the Map in the View', function() {
+  before(function(done) {
+    sinon.spy(MapView.prototype, 'render');
+    done();
+  });
+
+  it('should call render on creation', function(done){
+    this.mapView = new MapView({model: Backbone.Model.extend({})});
+    expect(MapView.prototype.render.called).to.be.true;
+    done();
+  });
+
+  it('should not be empty', function(done) {
+    expect(this.mapView.$el).to.not.eql('');
+    done();
+  });
+
+  after(function(done) {
+    MapView.prototype.render.restore();
+    done();
+  });
+
+});
+
+},{"../../app/js/views/view-map.js":6,"./../../app/bower_components/backbone/backbone.js":1,"chai":7,"sinon":54}],70:[function(require,module,exports){
+'use strict';
 var chai = require('chai');
 var Backbone = require("./../../app/bower_components/backbone/backbone.js");
 var sinon = require('sinon');
@@ -22705,7 +23523,7 @@ describe('Testing the Map', function() {
   });
 
   it('Should have map options and be an object', function(done) {
-    expect(mapModel.mapOptions).to.be.ok; //checks that it's an object
+    expect(mapModel.get('mapOptions')).to.be.ok; //checks that it's an object
     done();
   });
 
@@ -22715,8 +23533,7 @@ describe('Testing the Map', function() {
   });
 
   it('Should have a list of place-types', function(done) {
-
-
+    // expect(mapModel.get('placeTypes')).should.have.length(3)
     done();
   });
 
@@ -22725,4 +23542,4 @@ describe('Testing the Map', function() {
   });
 });
 
-},{"../../app/js/models/model-map":4,"./../../app/bower_components/backbone/backbone.js":1,"chai":5,"sinon":44}]},{},[59]);
+},{"../../app/js/models/model-map":4,"./../../app/bower_components/backbone/backbone.js":1,"chai":7,"sinon":54}]},{},[69,70]);
