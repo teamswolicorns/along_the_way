@@ -14,3 +14,5 @@ Technologies used:
 * JavaScript
 * Grunt
 * Mocha Chai
+
+TEAM SWOLICORNS!
