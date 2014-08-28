@@ -11,7 +11,7 @@ module.exports = Backbone.Model.extend({
       mapTypeId: google.maps.MapTypeId.ROADMAP,
       zoom: 15,
       center: new google.maps.LatLng(51.459684, -3.160270) //using cardiff as default because nerd
-    },
+    }
   },
 
   initialize: function() {
@@ -24,6 +24,6 @@ module.exports = Backbone.Model.extend({
     } else {
       console.log("navigator.geolocation not supported");
     }
-  },
+  }
 
 });
