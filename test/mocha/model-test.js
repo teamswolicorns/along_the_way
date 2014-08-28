@@ -4,28 +4,23 @@ var Backbone = require('backbone');
 var sinon = require('sinon');
 var expect = chai.expect;
 
-var Model = require('../../app/js/models/model-map');
+var Map = require('../../app/js/models/model-map');
 
-describe('Testing the Map', function() {
-  var mapModel;
+describe('Tests the Backbone MapModel.', function() {
+  var map;
   before(function(done) {
     this.mock = sinon.mock(Backbone);
-    mapModel = new Model();
+    map = new Map();
     done();
   });
 
-  it('Should have map options and be an object', function(done) {
-    expect(mapModel.get('mapOptions')).to.be.ok; //checks that it's an object
+  it('Map instances should be backbone objects.', function(done) {
+    expect(map).to.be.ok;
     done();
   });
 
-  it('Should initilize the current geolocation', function(done) {
-
-    done();
-  });
-
-  it('Should have a list of place-types', function(done) {
-    // expect(mapModel.get('placeTypes')).should.have.length(3)
+  it('There should be mapOptions in instances of the MapModel and they must contain attributes.', function(done) {
+    expect(map.get('mapOptions')).to.not.eql('');
     done();
   });
 
