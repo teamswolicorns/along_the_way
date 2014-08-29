@@ -109,6 +109,8 @@ body {
 #map {
   height: 500px;
   margin:20px auto;
+  width: 90%;
+
 }
 
 #destinationLocInput {
