@@ -108,7 +108,8 @@ body {
 @media all and (min-width: 700px) {
 #map {
   height: 500px;
-  margin:20px;
+  margin:20px auto;
+  width: 90%;
 
 }
 
